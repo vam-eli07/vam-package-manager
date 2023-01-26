@@ -4,7 +4,6 @@ plugins {
     kotlin("jvm") version "1.8.0"
     id("io.spring.dependency-management") version "1.1.0"
     id("org.springframework.boot") version Versions.SPRING_BOOT apply false
-    id("org.graalvm.buildtools.native") version "0.9.19" apply false
     idea
 }
 

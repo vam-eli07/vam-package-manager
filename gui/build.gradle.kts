@@ -1,8 +1,11 @@
-import org.graalvm.buildtools.gradle.dsl.GraalVMExtension
+plugins {
+    id("org.openjfx.javafxplugin") version "0.0.13"
+    id("edu.sc.seis.launch4j") version Versions.LAUNCH4J
+    application
+}
 
 apply {
     plugin("org.springframework.boot")
-    plugin("org.graalvm.buildtools.native")
 }
 
 dependencies {
@@ -11,15 +14,16 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:${Versions.SPRING_BOOT}")
 }
 
-val action = Action<GraalVMExtension> {
-    binaries {
-        named("main") {
-            javaLauncher.set(
-                javaToolchains.launcherFor {
-                    languageVersion.set(JavaLanguageVersion.of(17))
-                }
-            )
-        }
-    }
+javafx {
+    version = Versions.JAVAFX
+    modules("javafx.controls", "javafx.fxml")
 }
-extensions.configure("graalvmNative", action)
+
+application {
+    mainClassName = "com.eli07.vam.packagemanager.gui.VamPackageManagerGuiApplication"
+}
+
+launch4j {
+    mainClassName = "com.eli07.vam.packagemanager.gui.VamPackageManagerGuiApplication"
+    errTitle = "Error"
+}
