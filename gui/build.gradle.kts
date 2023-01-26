@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     id("org.openjfx.javafxplugin") version "0.0.13"
     id("edu.sc.seis.launch4j") version Versions.LAUNCH4J
@@ -20,10 +22,11 @@ javafx {
 }
 
 application {
-    mainClassName = "com.eli07.vam.packagemanager.gui.VamPackageManagerGuiApplication"
+    mainClass.set("com.eli07.vam.packagemanager.gui.VamPackageManagerGuiApplication")
 }
 
 launch4j {
     mainClassName = "com.eli07.vam.packagemanager.gui.VamPackageManagerGuiApplication"
     errTitle = "Error"
+    this.headerType = "console"
 }
