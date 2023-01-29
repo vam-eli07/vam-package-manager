@@ -2,16 +2,18 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.openjfx.javafxplugin") version "0.0.13"
-    id("edu.sc.seis.launch4j") version Versions.LAUNCH4J
+    id("org.beryx.runtime") version "1.12.7"
     application
 }
 
 apply {
     plugin("org.springframework.boot")
+    plugin("java")
 }
 
 dependencies {
     implementation(project(":core"))
+    implementation("org.kordamp.ikonli:ikonli-javafx:${Versions.IKONLI}")
     implementation("org.springframework.boot:spring-boot-starter:${Versions.SPRING_BOOT}")
     testImplementation("org.springframework.boot:spring-boot-starter-test:${Versions.SPRING_BOOT}")
 }
@@ -22,11 +24,22 @@ javafx {
 }
 
 application {
-    mainClass.set("com.eli07.vam.packagemanager.gui.VamPackageManagerGuiApplication")
+    mainClass.set("com.vameli.vam.packagemanager.gui.VamPackageManagerGuiApplication")
 }
 
-launch4j {
-    mainClassName = "com.eli07.vam.packagemanager.gui.VamPackageManagerGuiApplication"
-    errTitle = "Error"
-    this.headerType = "console"
+tasks.withType<BootJar> {
+    enabled = false
+}
+
+runtime {
+    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    modules.set(
+        listOf(
+            "java.desktop",
+            "jdk.jfr",
+            "java.xml",
+            "jdk.unsupported",
+            "java.scripting"
+        )
+    )
 }

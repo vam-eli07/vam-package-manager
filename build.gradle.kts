@@ -9,8 +9,9 @@ plugins {
 
 allprojects {
 
-    group = "com.eli07.vam.package-manager"
-    version = "0.0.1-SNAPSHOT"
+    group = "com.vameli.vam.package-manager"
+    version = "1.0.1"
+//    version = "0.0.1-SNAPSHOT"
 
     repositories {
         mavenCentral()

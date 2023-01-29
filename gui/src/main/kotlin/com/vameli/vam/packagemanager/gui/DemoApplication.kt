@@ -1,4 +1,4 @@
-package com.eli07.vam.packagemanager.gui
+package com.vameli.vam.packagemanager.gui
 
 import javafx.application.Application
 import javafx.scene.Scene
@@ -13,6 +13,7 @@ class DemoApplication : Application() {
             setOnAction {
                 println("Hello World")
             }
+//            graphic = FontIcon.of()
         }
         StackPane(button).apply {
             primaryStage.scene = Scene(this, 800.0, 600.0)

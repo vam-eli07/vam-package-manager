@@ -1,4 +1,4 @@
-package com.eli07.vam.packagemanager.core
+package com.vameli.vam.packagemanager.core
 
 import org.slf4j.LoggerFactory
 

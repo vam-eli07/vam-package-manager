@@ -1,4 +1,4 @@
-package com.eli07.vam.packagemanager.gui
+package com.vameli.vam.packagemanager.gui
 
 import javafx.application.Application
 import org.springframework.boot.SpringApplication
