@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="800"
+      spacing="5.0"
+      xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.vameli.vam.packagemanager.gui.settings.ApplicationSettingsController">
+
+    <Label text="VAM installation folder">
+        <font>
+            <Font name="System Bold" size="20.0"/>
+        </font>
+    </Label>
+    <Label text="Please provide path to the root folder of your Virt-A-Mate installation. If you installed VAM using VAM Updater, it's the location of the VAM updater itself.&#10;If you installed VAM on Steam, it will be probably something like C:\Program Files\Steam\steamapps\VaM"
+           wrapText="true"/>
+    <HBox spacing="5.0">
+        <TextField fx:id="vamInstallDirPathTextField" HBox.hgrow="ALWAYS"/>
+        <Button onAction="#browseVamInstallDir" text="Browse..."/>
+    </HBox>
+
+    <Pane prefHeight="10"/>
+
+    <Label text="Database folder">
+        <font>
+            <Font name="System Bold" size="20.0"/>
+        </font>
+    </Label>
+    <Label fx:id="databaseDirPathDescriptionLabel"
+           text="Please provide path to the folder, where the database for VAM package manager will be stored. Default setting is usually ok."
+           wrapText="true"/>
+    <HBox spacing="5.0">
+        <TextField fx:id="databaseDirPathTextField" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="browseDatabaseDirPathButton" onAction="#browseDatabaseDir" text="Browse..."/>
+    </HBox>
+
+
+    <Pane prefHeight="20"/>
+
+    <ButtonBar>
+        <buttons>
+            <Button fx:id="okButton" onAction="#ok" text="OK"/>
+        </buttons>
+    </ButtonBar>
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+    </padding>
+
+</VBox>

@@ -1,3 +1,4 @@
+import org.gradle.api.file.DuplicatesStrategy.EXCLUDE
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
@@ -13,7 +14,17 @@ apply {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":importer"))
+
+    // JavaFX related dependencies
     implementation("org.kordamp.ikonli:ikonli-javafx:${Versions.IKONLI}")
+    implementation("org.kordamp.ikonli:ikonli-fontawesome5-pack:${Versions.IKONLI}")
+    implementation("org.controlsfx:controlsfx:11.1.2")
+    implementation("io.github.mkpaz:atlantafx-base:1.1.0")
+    implementation("net.rgielen:javafx-weaver-spring-boot-starter:1.3.0")
+    implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
+
+    // Spring Boot related dependencies
     implementation("org.springframework.boot:spring-boot-starter:${Versions.SPRING_BOOT}")
     testImplementation("org.springframework.boot:spring-boot-starter-test:${Versions.SPRING_BOOT}")
 }
@@ -25,6 +36,10 @@ javafx {
 
 application {
     mainClass.set("com.vameli.vam.packagemanager.gui.VamPackageManagerGuiApplication")
+}
+
+tasks.withType<Jar>() {
+    duplicatesStrategy = EXCLUDE
 }
 
 tasks.withType<BootJar> {

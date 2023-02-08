@@ -1,0 +1,6 @@
+logging:
+  level:
+    root: INFO
+    com.vameli.vam.packagemanager: DEBUG
+    org.springframework.data.neo4j.cypher: TRACE
+
