@@ -29,7 +29,7 @@ class TaskProgressWindowController : Controller() {
         secondaryLabel.text = null
     }
 
-    fun updateProgress(primaryText: String, secondaryText: String? = null, progress: Int? = null) {
+    fun updateProgress(primaryText: String? = null, secondaryText: String? = null, progress: Int? = null) {
         primaryLabel.text = primaryText
         secondaryLabel.text = secondaryText
         progressBar.progress = progress?.let { it.toDouble() / 100.0 } ?: ProgressBar.INDETERMINATE_PROGRESS

@@ -8,5 +8,5 @@ interface LongRunningTask<PROGRESS, RESULT> {
 
 data class TaskProgress<PROGRESS>(
     val progress: PROGRESS,
-    val percentCompleted: Int? = null
+    val percentCompleted: Int? = null,
 )

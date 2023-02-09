@@ -34,6 +34,10 @@ allprojects {
         implementation("org.jetbrains.kotlin:kotlin-stdlib")
         implementation("org.slf4j:slf4j-api")
         testImplementation("io.mockk:mockk:1.13.4")
+
+        // Spring Boot related dependencies
+        implementation("org.springframework.boot:spring-boot-starter:${Versions.SPRING_BOOT}")
+        testImplementation("org.springframework.boot:spring-boot-starter-test:${Versions.SPRING_BOOT}")
     }
 
     kotlin {

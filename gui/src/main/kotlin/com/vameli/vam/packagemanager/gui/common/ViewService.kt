@@ -1,6 +1,7 @@
 package com.vameli.vam.packagemanager.gui.common
 
 import atlantafx.base.theme.NordDark
+import com.vameli.vam.packagemanager.core.LongRunningTask
 import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
@@ -11,7 +12,14 @@ import net.rgielen.fxweaver.core.FxWeaver
 import org.springframework.stereotype.Component
 import kotlin.reflect.KClass
 
-private val stylesheet = NordDark().userAgentStylesheet
+typealias ProgressWithWindowControllerListener<PROGRESS, RESULT> = (
+    event: LongRunningTaskEvent<PROGRESS, RESULT>,
+    windowController: TaskProgressWindowController,
+) -> Unit
+
+private
+
+val stylesheet = NordDark().userAgentStylesheet
 
 private const val STYLESHEET_CSS = "/layouts/application.css"
 private const val DEFAULT_TITLE = "VAM Package Manager"
@@ -60,7 +68,7 @@ class ViewService(private val fxWeaver: FxWeaver) {
             },
         )
         scene.userAgentStylesheet = stylesheet
-        scene.stylesheets.add(javaClass.getResource("/layouts/application.css")?.toExternalForm())
+        scene.stylesheets.add(javaClass.getResource(STYLESHEET_CSS)?.toExternalForm())
         return SceneWithController(scene, controllerAndView.controller)
     }
 
@@ -68,7 +76,35 @@ class ViewService(private val fxWeaver: FxWeaver) {
 
     fun <C : Controller, V : Node> createComponent(controllerClass: KClass<C>): FxControllerAndView<C, V> =
         fxWeaver.load(controllerClass.java)
+
+    fun <PROGRESS, RESULT> runLongRunningTaskInModalProgressDialog(
+        title: String = DEFAULT_PROGRESS_DIALOG_TITLE,
+        ownerWindow: Stage? = null,
+        task: LongRunningTask<PROGRESS, RESULT>,
+        onAbortThrow: () -> Throwable = { ProgressAbortedException() },
+        onProgress: ProgressWithWindowControllerListener<PROGRESS, RESULT>? = null,
+    ) {
+        var throwable: Throwable? = null
+        val (stage, controller) = createTaskProgressModalDialog(title, ownerWindow)
+
+        val subscription = task.asGuiObservable().subscribe(
+            /* onNext = */ { event -> onProgress?.invoke(event, controller) },
+            /* onError = */
+            { t ->
+                throwable = t
+                stage.close()
+            },
+            /* onComplete = */ { stage.close() },
+        )
+        stage.setOnCloseRequest { _ ->
+            throwable = onAbortThrow()
+        }
+        stage.showAndWait()
+        subscription.dispose()
+        throwable?.let { throw it }
+    }
 }
 
 data class StageWithController<C : Any>(val stage: Stage, val controller: C)
 data class SceneWithController<C : Any>(val scene: Scene, val controller: C)
+class ProgressAbortedException : IllegalStateException("Progress window closed by user")

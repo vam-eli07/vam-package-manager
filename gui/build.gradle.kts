@@ -23,10 +23,6 @@ dependencies {
     implementation("io.github.mkpaz:atlantafx-base:1.1.0")
     implementation("net.rgielen:javafx-weaver-spring-boot-starter:1.3.0")
     implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
-
-    // Spring Boot related dependencies
-    implementation("org.springframework.boot:spring-boot-starter:${Versions.SPRING_BOOT}")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:${Versions.SPRING_BOOT}")
 }
 
 javafx {
