@@ -24,7 +24,6 @@ import java.nio.file.Paths
 @Component
 @FxmlView("/layouts/settings/application-settings.fxml")
 class ApplicationSettingsController(
-    private val applicationSettingsUIService: ApplicationSettingsUIService,
     private val databaseEnvironment: DatabaseEnvironment,
 ) : Controller() {
 
@@ -101,7 +100,7 @@ class ApplicationSettingsController(
 
         validationSupport.initInitialDecoration()
 
-        cleanupSubscription(
+        cleanupLater(
             validationSupport.validationResultProperty().toObservable().subscribe {
                 okButton.isDisable = !it.errors.isEmpty()
             },

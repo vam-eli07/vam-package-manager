@@ -1,6 +1,6 @@
 package com.vameli.vam.packagemanager.core
 
-typealias ProgressListener<T> = (TaskProgress<T>) -> Any
+typealias ProgressListener<T> = (TaskProgress<T>) -> Any?
 
 interface LongRunningTask<PROGRESS, RESULT> {
     fun execute(progressListener: ProgressListener<PROGRESS>): RESULT

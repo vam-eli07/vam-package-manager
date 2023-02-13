@@ -36,7 +36,7 @@ fun <PROGRESS, RESULT> LongRunningTask<PROGRESS, RESULT>.asGuiObservable(): Long
 
 data class LongRunningTaskEvent<PROGRESS, RESULT>(
     val taskProgress: TaskProgress<PROGRESS>? = null,
-    val result: RESULT? = null
+    val result: RESULT? = null,
 ) {
     init {
         require(taskProgress != null || result != null) {

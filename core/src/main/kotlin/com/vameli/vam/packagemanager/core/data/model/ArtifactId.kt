@@ -6,6 +6,7 @@ data class ArtifactId(
     val version: String,
     val relativePath: String,
 ) {
+    val isExactVersion: Boolean = version.toIntOrNull()?.let { true } ?: false
     override fun toString(): String = "$authorId.$packageId.$version:$relativePath"
 }
 

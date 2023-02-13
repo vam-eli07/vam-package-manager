@@ -7,6 +7,9 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.stage.Modality
 import javafx.stage.Stage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.rgielen.fxweaver.core.FxControllerAndView
 import net.rgielen.fxweaver.core.FxWeaver
 import org.springframework.stereotype.Component

@@ -4,6 +4,7 @@ import com.vameli.vam.packagemanager.core.LongRunningTask
 import com.vameli.vam.packagemanager.core.ProgressListener
 import com.vameli.vam.packagemanager.core.TaskProgress
 import com.vameli.vam.packagemanager.core.data.infra.DatabaseEnvironment
+import com.vameli.vam.packagemanager.core.data.infra.SystemEnvironment
 import com.vameli.vam.packagemanager.core.service.DatabaseInitializationStatus
 import com.vameli.vam.packagemanager.core.service.DatabaseModelService
 import com.vameli.vam.packagemanager.core.service.ModelNotUpToDateException
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class DatabaseUIService(
+    private val systemEnvironment: SystemEnvironment,
     private val databaseEnvironment: DatabaseEnvironment,
     private val databaseModelService: DatabaseModelService,
     private val viewService: ViewService,
@@ -74,14 +76,13 @@ class DatabaseUIService(
     }
 
     private fun runFullDatabaseImport() {
-        val importJob = importJobFactory.createFullImportJob(databaseEnvironment.getDataDirectory()!!)
+        val importJob = importJobFactory.createFullImportJob(systemEnvironment.getVamInstallationHome()!!)
         try {
             viewService.runLongRunningTaskInModalProgressDialog(
                 title = "Building database",
                 task = importJob,
             ) { event, windowController -> windowController.updateImportTaskProgress(event.taskProgress) }
         } catch (e: ProgressAbortedException) {
-            // TODO detect clean state? Probably using some attribute on the model node
             Platform.exit()
             throw e
         } catch (t: Throwable) {
@@ -111,7 +112,7 @@ class DatabaseUIService(
 private class OpenDatabaseTask(private val databaseEnvironment: DatabaseEnvironment) : LongRunningTask<String, Unit> {
     override fun execute(progressListener: ProgressListener<String>) {
         val dataDirString = databaseEnvironment.getDataDirectory().toString()
-        progressListener(TaskProgress("Opening database folder: $dataDirString"))
+        progressListener(TaskProgress("Opening database: $dataDirString"))
         databaseEnvironment.start()
     }
 }

@@ -5,9 +5,12 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import javafx.stage.Stage
 import javafx.stage.WindowEvent
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 abstract class Controller {
     private val compositeDisposable = CompositeDisposable()
+    protected val scope = MainScope()
 
     var stage: Stage? = null
         set(value) {
@@ -15,7 +18,7 @@ abstract class Controller {
             field = value
         }
 
-    protected fun cleanupSubscription(disposable: Disposable) {
+    protected fun cleanupLater(disposable: Disposable) {
         compositeDisposable.add(disposable)
     }
 
@@ -23,5 +26,6 @@ abstract class Controller {
 
     open fun dispose() {
         compositeDisposable.dispose()
+        scope.cancel()
     }
 }

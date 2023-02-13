@@ -23,6 +23,7 @@ dependencies {
     implementation("io.github.mkpaz:atlantafx-base:1.1.0")
     implementation("net.rgielen:javafx-weaver-spring-boot-starter:1.3.0")
     implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-javafx:1.6.4")
 }
 
 javafx {
@@ -50,7 +51,7 @@ runtime {
             "jdk.jfr",
             "java.xml",
             "jdk.unsupported",
-            "java.scripting"
-        )
+            "java.scripting",
+        ),
     )
 }
