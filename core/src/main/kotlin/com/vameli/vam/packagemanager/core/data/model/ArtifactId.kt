@@ -4,10 +4,10 @@ data class ArtifactId(
     val authorId: String,
     val packageId: String,
     val version: String,
-    val relativePath: String,
+    val relativePath: String? = null,
 ) {
     val isExactVersion: Boolean = version.toIntOrNull()?.let { true } ?: false
-    override fun toString(): String = "$authorId.$packageId.$version:$relativePath"
+    override fun toString(): String = "$authorId.$packageId.$version" + relativePath?.let { ":$it" }.orEmpty()
 }
 
 private val DEPENDENCY_REF_REGEX =
