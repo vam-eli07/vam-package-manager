@@ -96,14 +96,14 @@ class DatabaseUIService(
         if (taskProgress == null) {
             return
         }
-        var primaryText = taskProgress.progress.currentOperation
-        if (taskProgress.progress.currentlyProcessingFile != null) {
-            primaryText += ": " + taskProgress.progress.currentlyProcessingFile
-        }
-        val secondaryText = if (taskProgress.progress.currentlyProcessingArtifactId != null) {
-            taskProgress.progress.currentlyProcessingArtifactId?.toString()
+        val currentlyProcessingFile = taskProgress.progress.currentlyProcessingFile
+        var primaryText: String? = null
+        var secondaryText: String? = null
+        if (currentlyProcessingFile != null) {
+            primaryText = currentlyProcessingFile.toString()
+            secondaryText = taskProgress.progress.currentOperation
         } else {
-            ""
+            primaryText = taskProgress.progress.currentOperation
         }
         updateProgress(primaryText, secondaryText, taskProgress.percentCompleted)
     }

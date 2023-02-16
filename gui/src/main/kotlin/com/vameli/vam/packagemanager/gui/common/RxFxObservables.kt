@@ -32,7 +32,12 @@ fun <PROGRESS, RESULT> LongRunningTask<PROGRESS, RESULT>.asGuiObservable(): Long
         } catch (t: Throwable) {
             emitter.onError(t)
         }
-    }.publish().refCount().subscribeOn(Schedulers.io()).observeOn(JavaFXPlatformScheduler)
+    }
+        .publish()
+        .refCount()
+        .debounce(100, TimeUnit.MILLISECONDS)
+        .subscribeOn(Schedulers.io())
+        .observeOn(JavaFXPlatformScheduler)
 
 data class LongRunningTaskEvent<PROGRESS, RESULT>(
     val taskProgress: TaskProgress<PROGRESS>? = null,
