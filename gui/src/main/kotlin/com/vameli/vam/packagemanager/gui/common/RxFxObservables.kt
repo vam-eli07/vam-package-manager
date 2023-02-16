@@ -35,7 +35,7 @@ fun <PROGRESS, RESULT> LongRunningTask<PROGRESS, RESULT>.asGuiObservable(): Long
     }
         .publish()
         .refCount()
-        .debounce(100, TimeUnit.MILLISECONDS)
+        .debounce(20, TimeUnit.MILLISECONDS)
         .subscribeOn(Schedulers.io())
         .observeOn(JavaFXPlatformScheduler)
 
