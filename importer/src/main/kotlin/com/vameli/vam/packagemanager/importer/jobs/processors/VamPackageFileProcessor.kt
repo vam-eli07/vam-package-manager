@@ -1,6 +1,8 @@
 package com.vameli.vam.packagemanager.importer.jobs.processors
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.vameli.vam.packagemanager.core.data.model.VamPackageFile
+import com.vameli.vam.packagemanager.core.service.VamResourceFileService
 import com.vameli.vam.packagemanager.importer.ImportJobProgress
 import com.vameli.vam.packagemanager.importer.jobs.FileToImport
 import com.vameli.vam.packagemanager.importer.jobs.ImportFileExtension
@@ -15,23 +17,57 @@ private const val META_JSON = "meta.json"
 private val NAME_WITH_EXTENSION_REGEX = Regex("^(.+)\\.(.+)$")
 
 @Service
-internal class VamPackageFileProcessor(
+internal class VamPackageFileProcessorDelegate(
+    private val vamResourceFileService: VamResourceFileService,
     private val delegatingTextResourceProcessor: DelegatingTextResourceProcessor,
     private val objectMapper: ObjectMapper,
 ) : ImportFileProcessor {
 
+    override fun canProcessFile(fileToImport: FileToImport): Boolean =
+        fileToImport.getExtension() == ImportFileExtension.VAR
+
     override fun processFile(fileToImport: FileToImport, context: ImportJobContext) {
-        if (fileToImport.getExtension() != ImportFileExtension.VAR) {
-            return
-        }
-        val vamPackageContext = VamPackageContext(delegatingTextResourceProcessor, context)
+        VamPackageFileProcessor(
+            vamResourceFileService,
+            delegatingTextResourceProcessor,
+            objectMapper,
+            context,
+            fileToImport,
+        ).execute()
+    }
+}
+
+private class VamPackageFileProcessor(
+    private val vamResourceFileService: VamResourceFileService,
+    private val delegatingTextResourceProcessor: DelegatingTextResourceProcessor,
+    private val objectMapper: ObjectMapper,
+    private val importJobContext: ImportJobContext,
+    private val fileToImport: FileToImport,
+) {
+    lateinit var metaJson: VamMetaJson
+    lateinit var zipFile: ZipFile
+
+    fun execute() {
         ZipFile(fileToImport.path.toFile()).use { zipFile ->
+            this.zipFile = zipFile
             zipFile.entries()
                 .asSequence()
                 .filter { it.isProcessable() }
-                .forEach { processZipEntry(fileToImport, it, vamPackageContext) }
+                .forEach { processZipEntry(fileToImport, it) }
         }
+        finalize()
     }
+
+    private fun VamMetaJson.toVamPackageFile() = VamPackageFile(
+        importJobContext.getPathRelativeToVamInstallation(fileToImport).toString(),
+        0,
+        fileToImport.fileSizeBytes,
+        fileToImport.lastModified,
+        licenseType,
+        TODO(),
+        TODO(),
+        TODO(),
+    )
 
     private fun ZipEntry.isProcessable(): Boolean {
         if (isDirectory) return false
@@ -40,20 +76,20 @@ internal class VamPackageFileProcessor(
         return extension.isTextType
     }
 
-    private fun processZipEntry(fileToImport: FileToImport, zipEntry: ZipEntry, vamPackageContext: VamPackageContext) {
-        vamPackageContext.importJobContext.publishProgress(
+    private fun processZipEntry(fileToImport: FileToImport, zipEntry: ZipEntry) {
+        importJobContext.publishProgress(
             ImportJobProgress(
                 "Package resource: ${zipEntry.name}",
-                vamPackageContext.importJobContext.getPathRelativeToVamInstallation(fileToImport),
+                importJobContext.getPathRelativeToVamInstallation(fileToImport),
             ),
         )
+        if (zipEntry.name == META_JSON) {
+            zipFile.getInputStream(zipEntry).reader().use { reader ->
+                metaJson = objectMapper.readValue(reader, VamMetaJson::class.java)
+            }
+        }
     }
-}
 
-private class VamPackageContext(
-    val delegatingTextResourceProcessor: DelegatingTextResourceProcessor,
-    val importJobContext: ImportJobContext,
-) {
-
-    private lateinit var metaJson: VamMetaJson
+    private fun finalize() {
+    }
 }

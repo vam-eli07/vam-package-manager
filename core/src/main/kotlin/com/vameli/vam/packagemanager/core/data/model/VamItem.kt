@@ -29,6 +29,9 @@ enum class VamItemType(val vamItemType: String, val description: String) {
     HAIR_MALE("HairMale", "Hair (Male)"),
     CLOTHING_FEMALE("ClothingFemale", "Clothing (Female)"),
     CLOTHING_MALE("ClothingMale", "Clothing (Male)"),
+    SCENE("Scene", "Scene"),
+    APPEARANCE("Appearance", "Appearance"),
+    FULL_LOOK("FullLook", "Full Look"),
     ;
 
     companion object {

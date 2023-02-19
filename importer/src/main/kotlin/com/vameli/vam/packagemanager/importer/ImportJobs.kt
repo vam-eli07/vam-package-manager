@@ -1,7 +1,7 @@
 package com.vameli.vam.packagemanager.importer
 
 import com.vameli.vam.packagemanager.core.LongRunningTask
-import com.vameli.vam.packagemanager.core.data.model.ArtifactId
+import com.vameli.vam.packagemanager.core.data.model.DependencyReference
 import com.vameli.vam.packagemanager.core.service.DatabaseModelService
 import com.vameli.vam.packagemanager.importer.jobs.FullImportJob
 import com.vameli.vam.packagemanager.importer.jobs.processors.DelegatingImportFileProcessor
@@ -31,5 +31,5 @@ data class ImportJobResult(val importErrors: List<ImportError> = emptyList())
 data class ImportJobProgress(
     val currentOperation: String,
     val currentlyProcessingFile: Path? = null,
-    val currentlyProcessingArtifactId: ArtifactId? = null,
+    val currentlyProcessingDependencyReference: DependencyReference? = null,
 )
