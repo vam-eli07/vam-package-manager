@@ -13,9 +13,10 @@ import org.springframework.stereotype.Repository
 private val PACKAGE_REFERENCE_REGEX =
     Regex("^([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9]+):([a-zA-Z0-9 /_.()\\-\\[\\]]+)\$")
 private val FILESYSTEM_REFERENCE_REGEX =
-    Regex("^([^/\\\\]+/)+[^/.]+\\.[^/.]+$")
+    Regex("^([^/\\\\:]+[/\\\\])+[^/\\\\.]+\\.[^/\\\\.]+$")
 
 const val RELATIONSHIP_HAS_REFERENCE = "HAS_REFERENCE"
+const val RELATIONSHIP_DEPENDS_ON = "DEPENDS_ON"
 
 sealed interface DependencyReference {
     companion object {

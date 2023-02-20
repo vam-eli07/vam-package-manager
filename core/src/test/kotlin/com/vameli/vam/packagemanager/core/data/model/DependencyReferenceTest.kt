@@ -7,7 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
-class VamReferenceTest {
+class DependencyReferenceTest {
 
     @ParameterizedTest
     @ValueSource(
@@ -19,7 +19,6 @@ class VamReferenceTest {
             "YameteOuji.OL01_Set.1:",
             "YameteOuji.OL01_Set.latest:\\Custom\\Clothing\\Female\\YameteOuji\\YameteOuji_OL01_Skirt\\OL01_Skirt.vam, YameteOuji, OL01_Set, latest, \\Custom\\Clothing\\Female\\YameteOuji\\YameteOuji_OL01_Skirt\\OL01_Skirt.vam",
             "/Custom/Clothing/Female/YameteOuji/YameteOuji_OL01_Skirt/OL01_Skirt.vam",
-            "Custom\\Clothing\\Female\\YameteOuji\\YameteOuji_OL01_Skirt\\OL01_Skirt.vam",
         ],
     )
     fun `does not match invalid dependency ids`(value: String) {
@@ -56,11 +55,13 @@ class VamReferenceTest {
     @ValueSource(
         strings = [
             "Custom/Clothing/Female/YameteOuji/YameteOuji_OL01_Skirt/OL01_Skirt.vam",
+            "Custom\\Clothing\\Female\\YameteOuji\\YameteOuji_OL01_Skirt\\OL01_Skirt.vam",
         ],
     )
     fun `matches valid filesystem reference`(value: String) {
         val dependencyReference = DependencyReference.fromString(value)
 
+        assertThat(dependencyReference).isNotNull
         require(dependencyReference is FilesystemDependencyReference)
         assertThat(dependencyReference.relativePath).describedAs("relative path").isEqualTo(value)
     }
