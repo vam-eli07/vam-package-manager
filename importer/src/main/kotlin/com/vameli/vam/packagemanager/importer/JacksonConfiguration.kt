@@ -1,5 +1,6 @@
 package com.vameli.vam.packagemanager.importer
 
+import com.fasterxml.jackson.core.json.JsonReadFeature
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -13,5 +14,6 @@ open class JacksonConfiguration {
     open fun objectMapper() = ObjectMapper().apply {
         registerKotlinModule()
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        enable(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature())
     }
 }

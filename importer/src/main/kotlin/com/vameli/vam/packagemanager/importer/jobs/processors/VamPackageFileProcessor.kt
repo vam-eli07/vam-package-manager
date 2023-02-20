@@ -2,6 +2,7 @@ package com.vameli.vam.packagemanager.importer.jobs.processors
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.vameli.vam.packagemanager.core.data.model.VamPackageFile
+import com.vameli.vam.packagemanager.core.requireState
 import com.vameli.vam.packagemanager.core.service.VamResourceFileService
 import com.vameli.vam.packagemanager.importer.ImportJobProgress
 import com.vameli.vam.packagemanager.importer.jobs.FileToImport
@@ -44,8 +45,8 @@ private class VamPackageFileProcessor(
     private val importJobContext: ImportJobContext,
     private val fileToImport: FileToImport,
 ) {
-    lateinit var metaJson: VamMetaJson
-    lateinit var zipFile: ZipFile
+    private lateinit var metaJson: VamMetaJson
+    private lateinit var zipFile: ZipFile
 
     fun execute() {
         ZipFile(fileToImport.path.toFile()).use { zipFile ->
@@ -91,5 +92,6 @@ private class VamPackageFileProcessor(
     }
 
     private fun finalize() {
+        requireState(::metaJson.isInitialized) { "meta.json not found in package ${fileToImport.path}" }
     }
 }
