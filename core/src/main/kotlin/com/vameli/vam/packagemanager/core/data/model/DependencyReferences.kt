@@ -11,33 +11,64 @@ import org.springframework.data.neo4j.repository.Neo4jRepository
 import org.springframework.stereotype.Repository
 
 private val PACKAGE_REFERENCE_REGEX =
-    Regex("^([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9]+):([a-zA-Z0-9 /_.()\\-\\[\\]]+)\$")
-private val FILESYSTEM_REFERENCE_REGEX =
+    Regex("^([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9]+)(:([a-zA-Z0-9 /_.()\\-\\[\\]]+))?\$")
+private val STANDALONE_FILE_REFERENCE_REGEX =
     Regex("^([^/\\\\:]+[/\\\\])+[^/\\\\.]+\\.[^/\\\\.]+$")
 
-const val RELATIONSHIP_HAS_REFERENCE = "HAS_REFERENCE"
+const val RELATIONSHIP_PROVIDES_REFERENCE = "PROVIDES_REFERENCE"
 const val RELATIONSHIP_DEPENDS_ON = "DEPENDS_ON"
 
 sealed interface DependencyReference {
     companion object {
         fun fromString(string: String): DependencyReference? {
             val packageReferenceMatch = PACKAGE_REFERENCE_REGEX.matchEntire(string)
-            if (packageReferenceMatch != null) {
-                return PackageDependencyReference(
-                    authorId = packageReferenceMatch.groupValues[1],
-                    packageId = packageReferenceMatch.groupValues[2],
-                    version = packageReferenceMatch.groupValues[3],
-                    relativePath = packageReferenceMatch.groupValues[4],
-                )
-            }
-            return if (FILESYSTEM_REFERENCE_REGEX matches string) {
-                FilesystemDependencyReference(
+            return when {
+                packageReferenceMatch != null -> fromStringPackageFile(packageReferenceMatch)
+                STANDALONE_FILE_REFERENCE_REGEX matches string -> FilesystemDependencyReference(
                     relativePath = string,
                 )
-            } else {
-                null
+
+                else -> null
             }
         }
+
+        private fun fromStringPackageFile(matchResult: MatchResult): DependencyReference {
+            val fileInPackagePath = matchResult.groupValues[5]
+            return if (fileInPackagePath.isEmpty()) {
+                PackageDependencyReference(
+                    authorId = matchResult.groupValues[1],
+                    packageId = matchResult.groupValues[2],
+                    version = matchResult.groupValues[3],
+                )
+            } else {
+                FileInPackageDependencyReference(
+                    authorId = matchResult.groupValues[1],
+                    packageId = matchResult.groupValues[2],
+                    version = matchResult.groupValues[3],
+                    relativePath = fileInPackagePath,
+                )
+            }
+        }
+    }
+}
+
+data class FileInPackageDependencyReference(
+    val authorId: String,
+    val packageId: String,
+    val version: String,
+    val relativePath: String,
+) : DependencyReference {
+    val isExactVersion: Boolean = version.toIntOrNull()?.let { true } ?: false
+
+    fun toPackageReference(): PackageDependencyReference = PackageDependencyReference(authorId, packageId, version)
+
+    override fun toString(): String = StringBuilder("$authorId.$packageId.$version:").run {
+        if (!relativePath.startsWith("/")) {
+            append("/$relativePath")
+        } else {
+            append(relativePath)
+        }
+        toString()
     }
 }
 
@@ -45,10 +76,10 @@ data class PackageDependencyReference(
     val authorId: String,
     val packageId: String,
     val version: String,
-    val relativePath: String? = null,
+
 ) : DependencyReference {
     val isExactVersion: Boolean = version.toIntOrNull()?.let { true } ?: false
-    override fun toString(): String = "$authorId.$packageId.$version" + relativePath?.let { ":/$it" }.orEmpty()
+    override fun toString(): String = "$authorId.$packageId.$version"
 }
 
 data class FilesystemDependencyReference(
@@ -74,7 +105,7 @@ data class VamDependencyReference(
     @ConvertWith(converter = DependencyReferenceConverter::class)
     var dependencyReference: DependencyReference,
     @Version
-    var version: Long,
+    var version: Long = 0,
 )
 
 @Repository

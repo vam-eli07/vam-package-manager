@@ -1,6 +1,6 @@
 dependencies {
     implementation(project(":core"))
-    implementation("com.jayway.jsonpath:json-path")
+    implementation("org.springframework:spring-tx")
     implementation("com.fasterxml.jackson.core:jackson-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")
     implementation("com.fasterxml.jackson.core:jackson-annotations")

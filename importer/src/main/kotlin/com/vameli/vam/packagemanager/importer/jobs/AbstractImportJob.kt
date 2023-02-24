@@ -15,7 +15,6 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 
 private val VAM_ROOT_DIRECTORY_NAMES_TO_SCAN = listOf("AddonPackages", "Custom", "Saves")
-private val IMPORTABLE_FILE_EXTENSIONS = setOf("vam", "vap", "var", "json")
 
 internal abstract class AbstractImportJob(
     private val databaseModelService: DatabaseModelService,
@@ -42,7 +41,7 @@ internal abstract class AbstractImportJob(
 
     protected fun isPathImportable(path: Path): Boolean {
         if (path.isDirectory()) return false
-        return path.extension in IMPORTABLE_FILE_EXTENSIONS
+        return ImportFileExtension.fromExtension(path.extension) != null
     }
 
     protected fun onBeforeScanForFiles(): Unit = Unit
@@ -67,6 +66,11 @@ internal abstract class AbstractImportJob(
                 logger().warn("Error while importing file ${fileToImport.path}", e)
                 context.addImportError(fileToImport.path, e)
             }
+        }
+
+        val importErrors = context.getImportErrors()
+        if (importErrors.isNotEmpty()) {
+            logger().warn("Import finished with errors: $importErrors")
         }
     }
 }

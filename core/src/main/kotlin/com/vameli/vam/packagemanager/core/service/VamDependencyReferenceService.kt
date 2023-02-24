@@ -13,5 +13,5 @@ open class VamDependencyReferenceService(private val vamDependencyRepository: Va
     @Transactional
     open fun findOrCreate(dependencyReference: DependencyReference): VamDependencyReference =
         vamDependencyRepository.findByIdOrNull(dependencyReference)
-            ?: vamDependencyRepository.save(VamDependencyReference(dependencyReference, 0))
+            ?: vamDependencyRepository.save(VamDependencyReference(dependencyReference))
 }

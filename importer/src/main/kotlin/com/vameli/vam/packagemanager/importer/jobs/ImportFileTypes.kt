@@ -21,6 +21,7 @@ enum class ImportFileType(val extension: ImportFileExtension) {
 enum class ImportFileExtension(val extension: String, val isBinaryType: Boolean, val description: String) {
     VAM("vam", false, "Item descriptor"),
     VAP("vap", false, "Preset file"),
+    VMI("vmi", false, "Morph file"),
     VAR("var", true, "Package of multiple resources in ZIP format"),
     JSON("json", false, "Generic JSON file, used for multiple item types (scenes)"),
     ;

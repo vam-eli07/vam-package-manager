@@ -6,6 +6,7 @@ import com.vameli.vam.packagemanager.core.logger
 import com.vameli.vam.packagemanager.importer.ImportError
 import com.vameli.vam.packagemanager.importer.ImportJobProgress
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Instant
 import java.util.Collections
 import java.util.LinkedList
@@ -48,6 +49,9 @@ internal class ImportJobContext(
 
     fun getPathRelativeToVamInstallation(fileToImport: FileToImport): Path =
         vamInstallationPath.relativize(fileToImport.path)
+
+    fun getPathRelativeToVamInstallation(relativePath: String): Path =
+        vamInstallationPath.relativize(Paths.get(relativePath))
 
     private fun recomputePercentCompleted() {
         if (totalFileSizeBytes == 0L) return

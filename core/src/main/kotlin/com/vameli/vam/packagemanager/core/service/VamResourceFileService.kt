@@ -1,5 +1,6 @@
 package com.vameli.vam.packagemanager.core.service
 
+import com.vameli.vam.packagemanager.core.data.model.VamPackageFile
 import com.vameli.vam.packagemanager.core.data.model.VamPackageFileRepository
 import com.vameli.vam.packagemanager.core.data.model.VamStandaloneFile
 import com.vameli.vam.packagemanager.core.data.model.VamStandaloneFileRepository
@@ -16,13 +17,20 @@ open class VamStandaloneFileService(
 ) {
 
     @Transactional
-    open fun createOrReplace(vamStandaloneFile: VamStandaloneFile) {
+    open fun createOrReplace(vamStandaloneFile: VamStandaloneFile): VamStandaloneFile {
         vamStandaloneFileRepository.findByIdOrNull(vamStandaloneFile.relativePath)?.let {
             vamStandaloneFile.version = it.version
         }
-        vamStandaloneFileRepository.save(vamStandaloneFile)
+        return vamStandaloneFileRepository.save(vamStandaloneFile)
     }
 }
 
 @Service
-class VamPackageFileService(private val vamPackageFileRepository: VamPackageFileRepository)
+open class VamPackageFileService(private val vamPackageFileRepository: VamPackageFileRepository) {
+    open fun createOrReplace(vamPackageFile: VamPackageFile): VamPackageFile {
+        vamPackageFileRepository.findByIdOrNull(vamPackageFile.relativePath)?.let {
+            vamPackageFile.version = it.version
+        }
+        return vamPackageFileRepository.save(vamPackageFile)
+    }
+}

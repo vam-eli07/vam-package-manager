@@ -11,8 +11,6 @@ plugins {
 allprojects {
 
     group = "com.vameli.vam.package-manager"
-    version = "1.0.1"
-//    version = "0.0.1-SNAPSHOT"
 
     repositories {
         mavenCentral()

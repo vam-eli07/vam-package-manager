@@ -1,7 +1,6 @@
 package com.vameli.vam.packagemanager.core.data.model
 
 import org.springframework.data.annotation.Version
-import org.springframework.data.neo4j.core.convert.ConvertWith
 import org.springframework.data.neo4j.core.schema.Id
 import org.springframework.data.neo4j.core.schema.Node
 import org.springframework.data.neo4j.core.schema.Relationship
@@ -26,8 +25,9 @@ class VamPackageFile(
     fileSizeBytes: Long,
     lastModified: Instant,
     var licenseType: String? = null,
-    @ConvertWith(converter = DependencyReferenceConverter::class)
-    var dependencyReference: DependencyReference,
+
+    @Relationship(RELATIONSHIP_PROVIDES_REFERENCE)
+    var vamDependencyReference: VamDependencyReference,
 
     @Relationship(RELATIONSHIP_CREATED_BY)
     var author: VamAuthor,
@@ -43,6 +43,7 @@ class VamStandaloneFile(
     fileSizeBytes: Long,
     lastModified: Instant,
 
+    @Relationship(RELATIONSHIP_PROVIDES_REFERENCE)
     var vamDependencyReference: VamDependencyReference,
 
     @Relationship(RELATIONSHIP_CONTAINS_ITEM)
