@@ -54,7 +54,7 @@ internal class VamFileProcessor(
         val vamFile = objectMapper.readValue<VamVamFile>(textResource.contentAsString)
         val vajResource = getSiblingVajFile(textResource, textResourceProvider)
         val author = vamAuthorService.findOrCreate(vamFile.creatorName)
-        val tags = vamItemTagService.getOrCreateTags(vamFile.tags)
+        val tags = vamFile.tags?.let { vamItemTagService.getOrCreateTags(it) } ?: emptySet()
         val vamItem = VamItem(
             id = id(importJobContext, vamFile, fileToImport, textResource),
             displayName = vamFile.displayName,

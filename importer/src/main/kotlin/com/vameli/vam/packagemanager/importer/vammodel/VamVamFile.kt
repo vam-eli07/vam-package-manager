@@ -7,5 +7,5 @@ data class VamVamFile(
     val uid: String,
     val displayName: String,
     val creatorName: String,
-    val tags: String,
+    val tags: String? = null,
 )
