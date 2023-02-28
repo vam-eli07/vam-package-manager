@@ -36,6 +36,17 @@ private const val JSON = """
             }
          }
       }
+   },
+   "somethingTotallyDifferent":{
+      "MeshedVR.3PointLightSetup.2:/Custom/SubScene/MeshedVR/3PointLightSetup/3 Point Light Setup UI Hidden.json":{
+         "dependencies":{
+            "AcidBubbles.Timeline.219:/Custom/Scripts/AcidBubbles/Timeline/VamTimeline.AtomAnimation.cslist":{
+               "dependencies":{
+                  
+               }
+            }
+         }
+      }
    }
 }
 """
@@ -45,7 +56,9 @@ private val EXPECTED_PACKAGE_DEPS = setOf(
     DependencyReference.fromString("NoStage3.Hair_Long_Upswept_Top_Bun.1:/Custom/Hair/Female/NoStage3/Long Upswept Top Bun/Long Upswept.vam"),
     DependencyReference.fromString("NoStage3.Hair_Long_Upswept_Top_Bun.1:/Custom/Hair/Female/NoStage3/Long Upswept Top Bun/Some Other.vam"),
     DependencyReference.fromString("MeshedVR.3PointLightSetup.1:/Custom/SubScene/MeshedVR/3PointLightSetup/3 Point Light Setup UI Hidden.json"),
+    DependencyReference.fromString("MeshedVR.3PointLightSetup.2:/Custom/SubScene/MeshedVR/3PointLightSetup/3 Point Light Setup UI Hidden.json"),
     DependencyReference.fromString("AcidBubbles.Timeline.218:/Custom/Scripts/AcidBubbles/Timeline/VamTimeline.AtomAnimation.cslist"),
+    DependencyReference.fromString("AcidBubbles.Timeline.219:/Custom/Scripts/AcidBubbles/Timeline/VamTimeline.AtomAnimation.cslist"),
 )
 
 internal class DependencyRefFromJsonExtractorTest {

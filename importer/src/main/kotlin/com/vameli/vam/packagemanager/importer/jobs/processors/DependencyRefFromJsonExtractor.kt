@@ -15,7 +15,7 @@ private const val FORK_JOIN_THRESHOLD = 2
 @Service
 class DependencyRefFromJsonExtractor(private val objectMapper: ObjectMapper) : DisposableBean {
 
-    private val forkJoinPool = ForkJoinPool.commonPool()
+    private val forkJoinPool = ForkJoinPool(Runtime.getRuntime().availableProcessors())
 
     fun extractDependencyReferences(rootNode: JsonNode): Collection<DependencyReference> = when {
         rootNode.isArray -> extractDependencyReferencesFromArray(rootNode as ArrayNode)
@@ -42,9 +42,18 @@ class DependencyRefFromJsonExtractor(private val objectMapper: ObjectMapper) : D
 
     private fun extractDependencyReferencesFromObject(node: ObjectNode): Collection<DependencyReference> =
         mutableListOf<DependencyReference>().apply {
+            val size = node.size()
+            val callableTasks = mutableListOf<Callable<Collection<DependencyReference>>>()
             node.fields().forEach { (key, value) ->
                 DependencyReference.fromString(key)?.let { add(it) }
-                addAll(extractDependencyReferences(value))
+                if (size <= FORK_JOIN_THRESHOLD) {
+                    addAll(extractDependencyReferences(value))
+                } else {
+                    callableTasks.add(Callable { extractDependencyReferences(value) })
+                }
+            }
+            if (callableTasks.isNotEmpty()) {
+                addAll(forkJoinPool.invokeAll(callableTasks).flatMap { it.get() })
             }
         }
 }
