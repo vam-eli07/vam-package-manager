@@ -2,6 +2,7 @@ package com.vameli.vam.packagemanager.gui.common
 
 import com.vameli.vam.packagemanager.core.LongRunningTask
 import com.vameli.vam.packagemanager.core.TaskProgress
+import com.vameli.vam.packagemanager.core.logger
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.disposables.Disposable
@@ -23,6 +24,12 @@ typealias LongRunningTaskObservable<PROGRESS, RESULT> = Observable<LongRunningTa
 
 fun <PROGRESS, RESULT> LongRunningTask<PROGRESS, RESULT>.asGuiObservable(): LongRunningTaskObservable<PROGRESS, RESULT> =
     Observable.create<LongRunningTaskEvent<PROGRESS, RESULT>> { emitter ->
+        emitter.setCancellable {
+            if (!emitter.isDisposed) {
+                logger().debug("Task interrupted")
+                Thread.currentThread().interrupt()
+            }
+        }
         try {
             val result = execute { progress ->
                 emitter.onNext(LongRunningTaskEvent(taskProgress = progress))

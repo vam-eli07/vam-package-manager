@@ -60,6 +60,9 @@ internal abstract class AbstractImportJob(
     private fun processAllFiles() {
         context.getFilesToImport().forEach { fileToImport ->
             try {
+                if (Thread.currentThread().isInterrupted) {
+                    throw InterruptedException("Import interrupted")
+                }
                 delegatingImportFileProcessor.processFile(fileToImport, context)
                 context.markFileAsImported(fileToImport)
             } catch (e: Exception) {
