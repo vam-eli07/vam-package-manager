@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-open class VamResourceFileService()
+class VamResourceFileService()
 
 @Service
-open class VamStandaloneFileService(
+class VamStandaloneFileService(
     private val vamStandaloneFileRepository: VamStandaloneFileRepository,
 ) {
 
@@ -26,8 +26,8 @@ open class VamStandaloneFileService(
 }
 
 @Service
-open class VamPackageFileService(private val vamPackageFileRepository: VamPackageFileRepository) {
-    open fun createOrReplace(vamPackageFile: VamPackageFile): VamPackageFile {
+class VamPackageFileService(private val vamPackageFileRepository: VamPackageFileRepository) {
+    fun createOrReplace(vamPackageFile: VamPackageFile): VamPackageFile {
         vamPackageFileRepository.findByIdOrNull(vamPackageFile.relativePath)?.let {
             vamPackageFile.version = it.version
         }

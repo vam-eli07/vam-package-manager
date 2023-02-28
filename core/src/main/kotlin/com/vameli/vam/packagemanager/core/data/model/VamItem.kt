@@ -14,6 +14,8 @@ const val RELATIONSHIP_CONTAINS_ITEM = "CONTAINS_ITEM"
 class VamItemTag(
     @Id
     var tag: String,
+    @Version
+    var version: Long = 0,
 )
 
 @Node
@@ -24,10 +26,14 @@ class VamItem(
     var version: Long = 0,
     var displayName: String,
     var type: VamItemType,
+    @Relationship(RELATIONSHIP_CREATED_BY)
+    var author: VamAuthor,
     @Relationship("HAS_TAG")
     var tags: Set<VamItemTag>,
     @Relationship(RELATIONSHIP_CONTAINS_ITEM, direction = INCOMING)
     var resourceFiles: Set<VamResourceFile>,
+    @Relationship(RELATIONSHIP_DEPENDS_ON)
+    var dependencies: Set<VamDependencyReference>,
 )
 
 enum class VamItemType(@JsonValue val vamItemType: String, val description: String) {
@@ -49,3 +55,6 @@ enum class VamItemType(@JsonValue val vamItemType: String, val description: Stri
 
 @Repository
 interface VamItemRepository : Neo4jRepository<VamItem, String>
+
+@Repository
+interface VamItemTagRepository : Neo4jRepository<VamItemTag, String>

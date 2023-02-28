@@ -19,6 +19,7 @@ allprojects {
     apply {
         plugin("kotlin")
         plugin("io.spring.dependency-management")
+        plugin("kotlin-spring")
     }
 
     dependencyManagement {

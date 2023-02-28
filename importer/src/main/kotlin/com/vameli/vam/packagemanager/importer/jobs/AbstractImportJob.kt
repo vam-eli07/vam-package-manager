@@ -70,7 +70,7 @@ internal abstract class AbstractImportJob(
 
         val importErrors = context.getImportErrors()
         if (importErrors.isNotEmpty()) {
-            logger().warn("Import finished with errors: $importErrors")
+            logger().warn("Import finished with ${importErrors.size} errors: $importErrors")
         }
     }
 }

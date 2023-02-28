@@ -1,7 +1,5 @@
 package com.vameli.vam.packagemanager.importer.jobs
 
-import kotlin.io.path.extension
-
 enum class ImportFileType(val extension: ImportFileExtension) {
     VAM(ImportFileExtension.VAM),
     VAP(ImportFileExtension.VAP),
@@ -34,10 +32,5 @@ enum class ImportFileExtension(val extension: String, val isBinaryType: Boolean,
         fun fromExtension(extension: String): ImportFileExtension? {
             return cache[extension.lowercase()]
         }
-
-        fun FileToImport.getExtension(): ImportFileExtension? = fromExtension(path.extension)
-
-        fun FileToImport.hasExtension(extension: ImportFileExtension): Boolean =
-            path.extension.lowercase() == extension.extension
     }
 }

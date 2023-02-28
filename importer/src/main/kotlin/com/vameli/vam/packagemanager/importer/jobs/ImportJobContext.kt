@@ -10,6 +10,7 @@ import java.nio.file.Paths
 import java.time.Instant
 import java.util.Collections
 import java.util.LinkedList
+import kotlin.io.path.extension
 
 internal class ImportJobContext(
     private val vamInstallationPath: Path,
@@ -62,4 +63,9 @@ internal class ImportJobContext(
     }
 }
 
-data class FileToImport(val path: Path, val fileSizeBytes: Long, val lastModified: Instant)
+data class FileToImport(val path: Path, val fileSizeBytes: Long, val lastModified: Instant) {
+
+    fun getExtension(): ImportFileExtension? = ImportFileExtension.fromExtension(path.extension)
+
+    fun hasExtension(extension: ImportFileExtension): Boolean = path.extension.lowercase() == extension.extension
+}

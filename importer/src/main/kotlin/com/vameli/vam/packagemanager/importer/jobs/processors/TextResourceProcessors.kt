@@ -11,31 +11,31 @@ import com.vameli.vam.packagemanager.core.service.VamDependencyReferenceService
 import com.vameli.vam.packagemanager.core.service.VamStandaloneFileService
 import com.vameli.vam.packagemanager.importer.ImportJobProgress
 import com.vameli.vam.packagemanager.importer.jobs.FileToImport
-import com.vameli.vam.packagemanager.importer.jobs.ImportFileExtension.Companion.getExtension
 import com.vameli.vam.packagemanager.importer.jobs.ImportJobContext
 import org.springframework.stereotype.Service
 import java.io.FileNotFoundException
+import java.nio.file.Path
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readText
 
-typealias TextResourceContentProvider = (stringPathRelativeToCurrentFile: String) -> TextResourceContent?
+typealias TextResourceProvider = (stringPathRelativeToCurrentFile: String) -> TextResource?
 
-data class TextResourceContent(val contentAsString: String, val parsedResourceJsonRoot: JsonNode? = null)
+data class TextResource(val relativePath: Path, val contentAsString: String, val parsedResourceJsonRoot: JsonNode? = null)
 
 internal interface TextResourceProcessor {
     fun canProcessResource(
         fileToImport: FileToImport,
         vamResourceFile: VamResourceFile,
         importJobContext: ImportJobContext,
-        resourceContent: TextResourceContent,
+        textResource: TextResource,
     ): Boolean
 
     fun processResource(
         fileToImport: FileToImport,
         vamResourceFile: VamResourceFile,
         importJobContext: ImportJobContext,
-        resourceContent: TextResourceContent,
-        textResourceContentProvider: TextResourceContentProvider,
+        textResource: TextResource,
+        textResourceProvider: TextResourceProvider,
     )
 }
 
@@ -72,7 +72,7 @@ internal class TextResourceFromFileProcessor(
         fileToImport: FileToImport,
         context: ImportJobContext,
         stringPathRelativeToCurrentFile: String? = null,
-    ): TextResourceContent {
+    ): TextResource {
         val relativePathOfCurrentFile = context.getPathRelativeToVamInstallation(fileToImport)
         val finalPath = if (stringPathRelativeToCurrentFile != null) {
             val pathOfSibling = relativePathOfCurrentFile.resolveSibling(stringPathRelativeToCurrentFile)
@@ -91,7 +91,7 @@ internal class TextResourceFromFileProcessor(
             logger().debug("File $finalPath is not a valid JSON file", e)
             null
         }
-        return TextResourceContent(contentAsString, rootNode)
+        return TextResource(finalPath, contentAsString, rootNode)
     }
 
     private fun FileToImport.toVamStandaloneFile(context: ImportJobContext): VamStandaloneFile {
@@ -120,18 +120,18 @@ internal class DelegatingTextResourceProcessor(
         fileToImport: FileToImport,
         vamResourceFile: VamResourceFile,
         importJobContext: ImportJobContext,
-        resourceContent: TextResourceContent,
+        textResource: TextResource,
     ): Boolean = true
 
     override fun processResource(
         fileToImport: FileToImport,
         vamResourceFile: VamResourceFile,
         importJobContext: ImportJobContext,
-        resourceContent: TextResourceContent,
-        textResourceContentProvider: TextResourceContentProvider,
+        textResource: TextResource,
+        textResourceProvider: TextResourceProvider,
     ) = processors.forEach {
-        if (it.canProcessResource(fileToImport, vamResourceFile, importJobContext, resourceContent)) {
-            it.processResource(fileToImport, vamResourceFile, importJobContext, resourceContent, textResourceContentProvider)
+        if (it.canProcessResource(fileToImport, vamResourceFile, importJobContext, textResource)) {
+            it.processResource(fileToImport, vamResourceFile, importJobContext, textResource, textResourceProvider)
         }
     }
 }

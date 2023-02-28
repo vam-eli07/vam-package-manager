@@ -8,10 +8,18 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-open class VamDependencyReferenceService(private val vamDependencyRepository: VamDependencyRepository) {
+@Transactional
+class VamDependencyReferenceService(private val vamDependencyRepository: VamDependencyRepository) {
 
-    @Transactional
-    open fun findOrCreate(dependencyReference: DependencyReference): VamDependencyReference =
+    fun findOrCreate(dependencyReference: DependencyReference): VamDependencyReference =
         vamDependencyRepository.findByIdOrNull(dependencyReference)
             ?: vamDependencyRepository.save(VamDependencyReference(dependencyReference))
+
+    fun findOrCreate(dependencyReferences: Collection<DependencyReference>): Set<VamDependencyReference> {
+        val existingDependencies = vamDependencyRepository.findAllById(dependencyReferences)
+        val existingDependencyReferences = existingDependencies.map { it.dependencyReference }.toSet()
+        val nonExistingDependencyReferences = dependencyReferences.filter { !existingDependencyReferences.contains(it) }
+        val newDependencies = nonExistingDependencyReferences.map { VamDependencyReference(it) }
+        return (existingDependencies + vamDependencyRepository.saveAll(newDependencies)).toSet()
+    }
 }

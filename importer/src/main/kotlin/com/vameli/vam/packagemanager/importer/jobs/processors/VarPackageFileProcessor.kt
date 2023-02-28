@@ -12,7 +12,6 @@ import com.vameli.vam.packagemanager.core.service.VamPackageFileService
 import com.vameli.vam.packagemanager.importer.ImportJobProgress
 import com.vameli.vam.packagemanager.importer.jobs.FileToImport
 import com.vameli.vam.packagemanager.importer.jobs.ImportFileExtension
-import com.vameli.vam.packagemanager.importer.jobs.ImportFileExtension.Companion.getExtension
 import com.vameli.vam.packagemanager.importer.jobs.ImportJobContext
 import com.vameli.vam.packagemanager.importer.vammodel.VamMetaJson
 import org.springframework.stereotype.Service
@@ -20,13 +19,14 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.util.LinkedList
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import kotlin.io.path.Path
 
 private const val META_JSON = "meta.json"
 private val NAME_WITH_EXTENSION_REGEX = Regex("^(.+)\\.(.+)$")
 private val PATH_WITH_VERSION_REGEX = Regex("^([^/\\\\]+[/\\\\])+([^/\\\\]+)\\.([a-z0-9]+)\\.(\\S+)$")
 
 @Service
-internal class VamPackageFileProcessorDelegate(
+internal class VarPackageFileProcessor(
     private val vamAuthorService: VamAuthorService,
     private val vamDependencyReferenceService: VamDependencyReferenceService,
     private val vamPackageFileService: VamPackageFileService,
@@ -39,7 +39,7 @@ internal class VamPackageFileProcessorDelegate(
         fileToImport.getExtension() == ImportFileExtension.VAR
 
     override fun processFile(fileToImport: FileToImport, context: ImportJobContext) {
-        VarPackageFileProcessor(
+        StatefulVarPackageFileProcessor(
             vamAuthorService,
             vamDependencyReferenceService,
             vamPackageFileService,
@@ -52,7 +52,7 @@ internal class VamPackageFileProcessorDelegate(
     }
 }
 
-private class VarPackageFileProcessor(
+private class StatefulVarPackageFileProcessor(
     private val vamAuthorService: VamAuthorService,
     private val vamDependencyReferenceService: VamDependencyReferenceService,
     private val vamPackageFileService: VamPackageFileService,
@@ -84,6 +84,7 @@ private class VarPackageFileProcessor(
         zipFile
             .entries()
             .asSequence()
+            .filter { !it.isDirectory }
             .forEach { pathToZipEntryMap[it.name] = it }
     }
 
@@ -101,7 +102,7 @@ private class VarPackageFileProcessor(
             licenseType,
             vamDependencyReferenceService.findOrCreate(dependencyRef),
             vamAuthorService.findOrCreate(creatorName),
-            emptySet(),
+            mutableSetOf(),
         )
     }
 
@@ -139,7 +140,7 @@ private class VarPackageFileProcessor(
         }
     }
 
-    private fun loadTextResourceInPackage(zipEntry: ZipEntry): TextResourceContent = zipFile.getInputStream(zipEntry).reader().use { reader ->
+    private fun loadTextResourceInPackage(zipEntry: ZipEntry): TextResource = zipFile.getInputStream(zipEntry).reader().use { reader ->
         val contentAsString = reader.readText()
         val rootNode = try {
             objectMapper.readTree(contentAsString)
@@ -147,10 +148,10 @@ private class VarPackageFileProcessor(
             logger().debug("Invalid JSON in file ${zipEntry.name} in package ${fileToImport.path}", e)
             null
         }
-        TextResourceContent(contentAsString, rootNode)
+        TextResource(Path(zipEntry.name), contentAsString, rootNode)
     }
 
-    private fun loadTextResourceInPackage(stringPathRelativeToCurrentFile: String): TextResourceContent? =
+    private fun loadTextResourceInPackage(stringPathRelativeToCurrentFile: String): TextResource? =
         pathToZipEntryMap[stringPathRelativeToCurrentFile]?.let { loadTextResourceInPackage(it) }
 
     private fun finalize() {
