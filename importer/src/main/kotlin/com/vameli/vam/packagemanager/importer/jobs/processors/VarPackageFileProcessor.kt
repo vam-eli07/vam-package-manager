@@ -23,7 +23,7 @@ import kotlin.io.path.Path
 
 private const val META_JSON = "meta.json"
 private val NAME_WITH_EXTENSION_REGEX = Regex("^(.+)\\.(.+)$")
-private val PATH_WITH_VERSION_REGEX = Regex("^([^/\\\\]+[/\\\\])+([^/\\\\]+)\\.([a-z0-9]+)\\.(\\S+)$")
+private val PATH_WITH_VERSION_REGEX = Regex("^([^/\\\\]+[/\\\\])+([^/\\\\]+)\\.(\\S+)\\.(\\S+)$")
 
 @Service
 internal class VarPackageFileProcessor(
