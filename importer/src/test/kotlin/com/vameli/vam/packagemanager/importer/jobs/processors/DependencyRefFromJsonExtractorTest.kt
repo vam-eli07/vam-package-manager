@@ -18,6 +18,11 @@ private const val JSON = """
             "id":"NoStage3.Hair_Long_Upswept_Top_Bun.1:/Custom/Hair/Female/NoStage3/Long Upswept Top Bun/Long Upswept.vam",
             "internalId":"NoStage3:Long Upswept",
             "enabled":"true"
+         },
+         {
+            "id":"NoStage3.Hair_Long_Upswept_Top_Bun.1:/Custom/Hair/Female/NoStage3/Long Upswept Top Bun/Some Other.vam",
+            "internalId":"NoStage3:Some Other",
+            "enabled":"true"
          }
       ]
    },
@@ -38,6 +43,7 @@ private const val JSON = """
 private val EXPECTED_PACKAGE_DEPS = setOf(
     DependencyReference.fromString("NoStage3.Hair_Long_Upswept_Top_Bun.1:/Custom/Hair/Female/NoStage3/Long Upswept Top Bun/Top Bun.vam"),
     DependencyReference.fromString("NoStage3.Hair_Long_Upswept_Top_Bun.1:/Custom/Hair/Female/NoStage3/Long Upswept Top Bun/Long Upswept.vam"),
+    DependencyReference.fromString("NoStage3.Hair_Long_Upswept_Top_Bun.1:/Custom/Hair/Female/NoStage3/Long Upswept Top Bun/Some Other.vam"),
     DependencyReference.fromString("MeshedVR.3PointLightSetup.1:/Custom/SubScene/MeshedVR/3PointLightSetup/3 Point Light Setup UI Hidden.json"),
     DependencyReference.fromString("AcidBubbles.Timeline.218:/Custom/Scripts/AcidBubbles/Timeline/VamTimeline.AtomAnimation.cslist"),
 )

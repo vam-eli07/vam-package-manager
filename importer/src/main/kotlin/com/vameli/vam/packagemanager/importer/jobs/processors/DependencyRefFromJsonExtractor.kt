@@ -2,14 +2,23 @@ package com.vameli.vam.packagemanager.importer.jobs.processors
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.vameli.vam.packagemanager.core.data.model.DependencyReference
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.stereotype.Service
+import java.util.concurrent.Callable
+import java.util.concurrent.ForkJoinPool
+
+private const val FORK_JOIN_THRESHOLD = 2
 
 @Service
-class DependencyRefFromJsonExtractor(private val objectMapper: ObjectMapper) {
+class DependencyRefFromJsonExtractor(private val objectMapper: ObjectMapper) : DisposableBean {
+
+    private val forkJoinPool = ForkJoinPool.commonPool()
+
     fun extractDependencyReferences(rootNode: JsonNode): Collection<DependencyReference> = when {
-        rootNode.isArray -> rootNode.flatMap { extractDependencyReferences(it) }
+        rootNode.isArray -> extractDependencyReferencesFromArray(rootNode as ArrayNode)
         rootNode.isObject -> extractDependencyReferencesFromObject(rootNode as ObjectNode)
         rootNode.isTextual -> DependencyReference.fromString(rootNode.textValue())?.let { listOf(it) } ?: emptyList()
         else -> emptyList()
@@ -17,6 +26,19 @@ class DependencyRefFromJsonExtractor(private val objectMapper: ObjectMapper) {
 
     fun extractDependencyReferences(jsonContent: String): Collection<DependencyReference> =
         extractDependencyReferences(objectMapper.readTree(jsonContent))
+
+    override fun destroy() {
+        forkJoinPool.shutdown()
+    }
+
+    private fun extractDependencyReferencesFromArray(node: ArrayNode): Collection<DependencyReference> {
+        val itemCount = node.size()
+        if (itemCount <= FORK_JOIN_THRESHOLD) {
+            return node.flatMap { extractDependencyReferences(it) }
+        }
+        val tasks = node.map { Callable { extractDependencyReferences(it) } }
+        return forkJoinPool.invokeAll(tasks).flatMap { it.get() }
+    }
 
     private fun extractDependencyReferencesFromObject(node: ObjectNode): Collection<DependencyReference> =
         mutableListOf<DependencyReference>().apply {
