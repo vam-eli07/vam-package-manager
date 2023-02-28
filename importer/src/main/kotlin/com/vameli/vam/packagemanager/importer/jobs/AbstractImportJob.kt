@@ -8,6 +8,7 @@ import com.vameli.vam.packagemanager.importer.ImportJob
 import com.vameli.vam.packagemanager.importer.ImportJobProgress
 import com.vameli.vam.packagemanager.importer.ImportJobResult
 import com.vameli.vam.packagemanager.importer.jobs.processors.DelegatingImportFileProcessor
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
@@ -66,8 +67,16 @@ internal abstract class AbstractImportJob(
                 delegatingImportFileProcessor.processFile(fileToImport, context)
                 context.markFileAsImported(fileToImport)
             } catch (e: Exception) {
-                logger().warn("Error while importing file ${fileToImport.path}", e)
-                context.addImportError(fileToImport.path, e)
+                when (e) {
+                    is IOException,
+                    is RuntimeException,
+                    -> {
+                        logger().warn("Error while importing file ${fileToImport.path}", e)
+                        context.addImportError(fileToImport.path, e)
+                    }
+
+                    else -> throw e
+                }
             }
         }
 
