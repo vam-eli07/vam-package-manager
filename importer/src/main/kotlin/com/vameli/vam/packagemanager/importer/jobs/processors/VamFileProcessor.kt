@@ -9,6 +9,7 @@ import com.vameli.vam.packagemanager.core.data.model.VamItem
 import com.vameli.vam.packagemanager.core.data.model.VamPackageFile
 import com.vameli.vam.packagemanager.core.data.model.VamResourceFile
 import com.vameli.vam.packagemanager.core.data.model.VamStandaloneFile
+import com.vameli.vam.packagemanager.core.logger
 import com.vameli.vam.packagemanager.core.service.VamAuthorService
 import com.vameli.vam.packagemanager.core.service.VamDependencyReferenceService
 import com.vameli.vam.packagemanager.core.service.VamItemService
@@ -91,6 +92,9 @@ internal class VamFileProcessor(
         val vajRootNode = vajTextResource?.let { getJsonRootNode(it) }
         val vamDependencyRefs = vamRootNode?.let { dependencyRefFromJsonExtractor.extractDependencyReferences(it) } ?: emptySet()
         val vajDependencyRefs = vajRootNode?.let { dependencyRefFromJsonExtractor.extractDependencyReferences(it) } ?: emptySet()
+        if (vamDependencyRefs.isNotEmpty() || vajDependencyRefs.isNotEmpty()) {
+            logger().info("YAAAAY! Found some dependencies! Vam: $vamDependencyRefs, Vaj: $vajDependencyRefs")
+        }
         return vamDependencyRefs + vajDependencyRefs
     }
 
