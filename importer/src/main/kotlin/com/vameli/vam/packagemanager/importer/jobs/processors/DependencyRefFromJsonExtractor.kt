@@ -8,18 +8,18 @@ import org.springframework.stereotype.Service
 
 @Service
 class DependencyRefFromJsonExtractor(private val objectMapper: ObjectMapper) {
-    fun extractDependencyReferences(rootNode: JsonNode): Collection<DependencyReference> = when {
-        rootNode.isArray -> rootNode.flatMap { extractDependencyReferences(it) }
+    fun extractDependencyReferences(rootNode: JsonNode): Set<DependencyReference> = when {
+        rootNode.isArray -> rootNode.flatMap { extractDependencyReferences(it) }.toSet()
         rootNode.isObject -> extractDependencyReferencesFromObject(rootNode as ObjectNode)
-        rootNode.isTextual -> DependencyReference.fromString(rootNode.textValue())?.let { listOf(it) } ?: emptyList()
-        else -> emptyList()
+        rootNode.isTextual -> DependencyReference.fromString(rootNode.textValue())?.let { setOf(it) } ?: emptySet()
+        else -> emptySet()
     }
 
-    fun extractDependencyReferences(jsonContent: String): Collection<DependencyReference> =
+    fun extractDependencyReferences(jsonContent: String): Set<DependencyReference> =
         extractDependencyReferences(objectMapper.readTree(jsonContent))
 
-    private fun extractDependencyReferencesFromObject(node: ObjectNode): Collection<DependencyReference> =
-        mutableListOf<DependencyReference>().apply {
+    private fun extractDependencyReferencesFromObject(node: ObjectNode): Set<DependencyReference> =
+        mutableSetOf<DependencyReference>().apply {
             node.fields().forEach { (key, value) ->
                 DependencyReference.fromString(key)?.let { add(it) }
                 addAll(extractDependencyReferences(value))

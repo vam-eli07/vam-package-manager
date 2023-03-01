@@ -106,7 +106,11 @@ data class VamDependencyReference(
     var dependencyReference: DependencyReference,
     @Version
     var version: Long = 0,
-)
+) {
+    override fun toString(): String {
+        return "VamDependencyReference(dependencyReference=$dependencyReference, version=$version)"
+    }
+}
 
 @Repository
 interface VamDependencyRepository : Neo4jRepository<VamDependencyReference, DependencyReference>

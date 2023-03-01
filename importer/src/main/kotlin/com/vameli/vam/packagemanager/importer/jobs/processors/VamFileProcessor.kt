@@ -2,6 +2,7 @@ package com.vameli.vam.packagemanager.importer.jobs.processors
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.vameli.vam.packagemanager.core.data.model.DependencyReference
 import com.vameli.vam.packagemanager.core.data.model.FilesystemDependencyReference
 import com.vameli.vam.packagemanager.core.data.model.VamDependencyReference
 import com.vameli.vam.packagemanager.core.data.model.VamItem
@@ -33,9 +34,8 @@ internal class VamFileProcessor(
     private val vamAuthorService: VamAuthorService,
     private val vamItemService: VamItemService,
     private val vamItemTagService: VamTagService,
-    private val objectMapper: ObjectMapper,
-) :
-    TextResourceProcessor {
+    objectMapper: ObjectMapper,
+) : AbstractTextResourceProcessor(objectMapper) {
     override fun canProcessResource(
         fileToImport: FileToImport,
         vamResourceFile: VamResourceFile,
@@ -55,14 +55,15 @@ internal class VamFileProcessor(
         val vajResource = getSiblingVajFile(textResource, textResourceProvider)
         val author = vamAuthorService.findOrCreate(vamFile.creatorName)
         val tags = vamFile.tags?.let { vamItemTagService.getOrCreateTags(it) } ?: emptySet()
+        val dependencies = dependencies(textResource, vajResource)
         val vamItem = VamItem(
             id = id(importJobContext, vamFile, fileToImport, textResource),
             displayName = vamFile.displayName,
             type = vamFile.itemType,
             tags = tags,
             author = author,
-            resourceFiles = resourceFiles(vamResourceFile, setOfNotNull(textResource, vajResource)),
-            dependencies = dependencies(textResource, vajResource),
+            resourceFiles = resourceFiles(vamResourceFile, dependencies),
+            dependencies = dependencies.toVamDependencyReferences(),
         )
         vamResourceFile.addItem(vamItem)
         vamItemService.saveItem(vamItem)
@@ -85,18 +86,16 @@ internal class VamFileProcessor(
     private fun dependencies(
         vamTextResource: TextResource,
         vajTextResource: TextResource?,
-    ): Set<VamDependencyReference> {
-        val vamDependencyRefs =
-            vamTextResource.parsedResourceJsonRoot?.let { dependencyRefFromJsonExtractor.extractDependencyReferences(it) } ?: emptyList()
-        val vajDependencyRefs =
-            vajTextResource?.parsedResourceJsonRoot?.let { dependencyRefFromJsonExtractor.extractDependencyReferences(it) } ?: emptyList()
-        val allDependencyRefs = vamDependencyRefs + vajDependencyRefs
-        return if (allDependencyRefs.isNotEmpty()) {
-            return dependencyReferenceService.findOrCreate(vamDependencyRefs + vajDependencyRefs).toSet()
-        } else {
-            emptySet()
-        }
+    ): Set<DependencyReference> {
+        val vamRootNode = getJsonRootNode(vamTextResource)
+        val vajRootNode = vajTextResource?.let { getJsonRootNode(it) }
+        val vamDependencyRefs = vamRootNode?.let { dependencyRefFromJsonExtractor.extractDependencyReferences(it) } ?: emptySet()
+        val vajDependencyRefs = vajRootNode?.let { dependencyRefFromJsonExtractor.extractDependencyReferences(it) } ?: emptySet()
+        return vamDependencyRefs + vajDependencyRefs
     }
+
+    private fun Collection<DependencyReference>.toVamDependencyReferences(): Set<VamDependencyReference> =
+        this.takeIf { it.isNotEmpty() }?.let { dependencyReferenceService.findOrCreate(it) } ?: emptySet()
 
     private fun getSiblingVajFile(textResource: TextResource, textResourceProvider: TextResourceProvider): TextResource? {
         val fileNameWithoutExtension = textResource.relativePath.nameWithoutExtension
@@ -105,15 +104,12 @@ internal class VamFileProcessor(
         return textResourceProvider(vajPath.toString())
     }
 
-    private fun resourceFiles(vamResourceFile: VamResourceFile, textResources: Collection<TextResource>): Set<VamResourceFile> {
+    private fun resourceFiles(vamResourceFile: VamResourceFile, dependencies: Collection<DependencyReference>): Set<VamResourceFile> {
         return if (vamResourceFile is VamPackageFile) {
             setOf(vamResourceFile)
         } else {
-            textResources
-                .mapNotNull { it.parsedResourceJsonRoot }
-                .flatMap {
-                    dependencyRefFromJsonExtractor.extractDependencyReferences(it).filterIsInstance(FilesystemDependencyReference::class.java)
-                }
+            dependencies
+                .filterIsInstance(FilesystemDependencyReference::class.java)
                 .map { dependencyRef ->
                     val attributes = Files.readAttributes(Path(dependencyRef.relativePath), BasicFileAttributes::class.java)
                     val vamDependencyReference = vamDependencyReferenceService.findOrCreate(dependencyRef)

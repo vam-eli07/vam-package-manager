@@ -33,7 +33,7 @@ class VamPackageFile(
     var author: VamAuthor,
 
     @Relationship(RELATIONSHIP_CONTAINS_ITEM)
-    var items: MutableSet<VamItem>,
+    var items: MutableSet<VamItem> = mutableSetOf(),
 ) : VamResourceFile(relativePath, version, fileSizeBytes, lastModified)
 
 @Node

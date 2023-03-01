@@ -1,10 +1,8 @@
 package com.vameli.vam.packagemanager.importer.jobs.processors
 
-import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.vameli.vam.packagemanager.core.data.model.PackageDependencyReference
 import com.vameli.vam.packagemanager.core.data.model.VamPackageFile
-import com.vameli.vam.packagemanager.core.logger
 import com.vameli.vam.packagemanager.core.requireState
 import com.vameli.vam.packagemanager.core.service.VamAuthorService
 import com.vameli.vam.packagemanager.core.service.VamDependencyReferenceService
@@ -102,7 +100,6 @@ private class StatefulVarPackageFileProcessor(
             licenseType,
             vamDependencyReferenceService.findOrCreate(dependencyRef),
             vamAuthorService.findOrCreate(creatorName),
-            mutableSetOf(),
         )
     }
 
@@ -142,13 +139,7 @@ private class StatefulVarPackageFileProcessor(
 
     private fun loadTextResourceInPackage(zipEntry: ZipEntry): TextResource = zipFile.getInputStream(zipEntry).reader().use { reader ->
         val contentAsString = reader.readText()
-        val rootNode = try {
-            objectMapper.readTree(contentAsString)
-        } catch (e: JsonProcessingException) {
-            logger().debug("Invalid JSON in file ${zipEntry.name} in package ${fileToImport.path}", e)
-            null
-        }
-        TextResource(Path(zipEntry.name), contentAsString, rootNode)
+        TextResource(Path(zipEntry.name), contentAsString)
     }
 
     private fun loadTextResourceInPackage(stringPathRelativeToCurrentFile: String): TextResource? =

@@ -16,7 +16,11 @@ class VamItemTag(
     var tag: String,
     @Version
     var version: Long = 0,
-)
+) {
+    override fun toString(): String {
+        return "VamItemTag(tag='$tag', version=$version)"
+    }
+}
 
 @Node
 class VamItem(

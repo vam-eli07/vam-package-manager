@@ -37,6 +37,17 @@ private const val JSON = """
          }
       }
    },
+   "somethingWithDuplicateDependencies":{
+      "MeshedVR.3PointLightSetup.1:/Custom/SubScene/MeshedVR/3PointLightSetup/3 Point Light Setup UI Hidden.json":{
+         "dependencies":{
+            "AcidBubbles.Timeline.218:/Custom/Scripts/AcidBubbles/Timeline/VamTimeline.AtomAnimation.cslist":{
+               "dependencies":{
+                  
+               }
+            }
+         }
+      }
+   },
    "somethingTotallyDifferent":{
       "MeshedVR.3PointLightSetup.2:/Custom/SubScene/MeshedVR/3PointLightSetup/3 Point Light Setup UI Hidden.json":{
          "dependencies":{

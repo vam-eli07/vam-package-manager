@@ -20,7 +20,7 @@ import kotlin.io.path.readText
 
 typealias TextResourceProvider = (stringPathRelativeToCurrentFile: String) -> TextResource?
 
-data class TextResource(val relativePath: Path, val contentAsString: String, val parsedResourceJsonRoot: JsonNode? = null)
+data class TextResource(val relativePath: Path, val contentAsString: String)
 
 internal interface TextResourceProcessor {
     fun canProcessResource(
@@ -91,7 +91,7 @@ internal class TextResourceFromFileProcessor(
             logger().debug("File $finalPath is not a valid JSON file", e)
             null
         }
-        return TextResource(finalPath, contentAsString, rootNode)
+        return TextResource(finalPath, contentAsString)
     }
 
     private fun FileToImport.toVamStandaloneFile(context: ImportJobContext): VamStandaloneFile {
@@ -132,6 +132,18 @@ internal class DelegatingTextResourceProcessor(
     ) = processors.forEach {
         if (it.canProcessResource(fileToImport, vamResourceFile, importJobContext, textResource)) {
             it.processResource(fileToImport, vamResourceFile, importJobContext, textResource, textResourceProvider)
+        }
+    }
+}
+
+abstract class AbstractTextResourceProcessor(protected val objectMapper: ObjectMapper) : TextResourceProcessor {
+
+    protected fun getJsonRootNode(textResource: TextResource): JsonNode? {
+        return try {
+            objectMapper.readTree(textResource.contentAsString)
+        } catch (e: JsonProcessingException) {
+            logger().debug("File ${textResource.relativePath} is not a valid JSON file", e)
+            null
         }
     }
 }

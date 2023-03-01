@@ -14,7 +14,11 @@ class VamAuthor(
     var name: String,
     @Version
     var version: Long = 0,
-)
+) {
+    override fun toString(): String {
+        return "VamAuthor(name='$name', version=$version)"
+    }
+}
 
 @Repository
 interface VamAuthorRepository : Neo4jRepository<VamAuthor, String>
