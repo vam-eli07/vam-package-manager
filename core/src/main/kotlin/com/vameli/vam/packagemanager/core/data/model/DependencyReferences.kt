@@ -86,6 +86,13 @@ data class FilesystemDependencyReference(
     val relativePath: String,
 ) : DependencyReference {
     override fun toString(): String = relativePath
+    fun toFileInPackageReference(packageReference: PackageDependencyReference): FileInPackageDependencyReference =
+        FileInPackageDependencyReference(
+            authorId = packageReference.authorId,
+            packageId = packageReference.packageId,
+            version = packageReference.version,
+            relativePath = relativePath,
+        )
 }
 
 class DependencyReferenceConverter : Neo4jPersistentPropertyConverter<DependencyReference> {

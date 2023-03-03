@@ -140,4 +140,20 @@ class DependencyReferenceTest {
 
         assertThat(vamReference.toString()).isEqualTo(value)
     }
+
+    @ParameterizedTest
+    @CsvSource(
+        value = [
+            "Custom/Clothing/Female/YameteOuji/YameteOuji_OL01_Skirt/OL01_Skirt.vam, YameteOuji.OL01_Set.1, YameteOuji.OL01_Set.1:Custom/Clothing/Female/YameteOuji/YameteOuji_OL01_Skirt/OL01_Skirt.vam",
+        ],
+    )
+    fun `filesystem reference creates correct file in package reference`(localFilePath: String, packageRefString: String, expectedRefString: String) {
+        val filesystemRef = FilesystemDependencyReference(localFilePath)
+        val packageRef = DependencyReference.fromString(packageRefString) as PackageDependencyReference
+
+        val fileInPackageRef = filesystemRef.toFileInPackageReference(packageRef)
+
+        val expectedFileInPackageRef = DependencyReference.fromString(expectedRefString) as FileInPackageDependencyReference
+        assertThat(fileInPackageRef).isEqualTo(expectedFileInPackageRef)
+    }
 }

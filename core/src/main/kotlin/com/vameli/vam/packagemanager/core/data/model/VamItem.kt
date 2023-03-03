@@ -33,11 +33,11 @@ class VamItem(
     @Relationship(RELATIONSHIP_CREATED_BY)
     var author: VamAuthor,
     @Relationship("HAS_TAG")
-    var tags: Set<VamItemTag>,
+    var tags: MutableSet<VamItemTag>,
     @Relationship(RELATIONSHIP_CONTAINS_ITEM, direction = INCOMING)
-    var resourceFiles: Set<VamResourceFile>,
+    var resourceFiles: MutableSet<VamResourceFile> = mutableSetOf(),
     @Relationship(RELATIONSHIP_DEPENDS_ON)
-    var dependencies: Set<VamDependencyReference>,
+    var dependencies: MutableSet<VamDependencyReference> = mutableSetOf(),
 )
 
 enum class VamItemType(@JsonValue val vamItemType: String, val description: String) {
@@ -54,6 +54,18 @@ enum class VamItemType(@JsonValue val vamItemType: String, val description: Stri
         private val cache = values().associateBy(VamItemType::vamItemType)
 
         fun fromVamItemType(vamItemType: String): VamItemType? = cache[vamItemType]
+    }
+}
+
+interface VamItemDependenciesProjection {
+    var dependencies: MutableSet<VamDependencyReference>
+}
+
+interface VamItemResourceFilesProjection {
+    var resourceFiles: MutableSet<ResourceFileIdProjection>
+
+    interface ResourceFileIdProjection {
+        var relativePath: String
     }
 }
 

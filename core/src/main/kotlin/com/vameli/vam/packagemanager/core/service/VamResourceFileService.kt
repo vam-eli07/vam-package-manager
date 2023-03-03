@@ -12,20 +12,30 @@ import org.springframework.transaction.annotation.Transactional
 class VamResourceFileService()
 
 @Service
+@Transactional
 class VamStandaloneFileService(
     private val vamStandaloneFileRepository: VamStandaloneFileRepository,
 ) {
 
-    @Transactional
-    open fun createOrReplace(vamStandaloneFile: VamStandaloneFile): VamStandaloneFile {
+    fun createOrReplace(vamStandaloneFile: VamStandaloneFile): VamStandaloneFile {
         vamStandaloneFileRepository.findByIdOrNull(vamStandaloneFile.relativePath)?.let {
             vamStandaloneFile.version = it.version
         }
         return vamStandaloneFileRepository.save(vamStandaloneFile)
     }
+
+    fun createOrReplace(vamStandaloneFiles: Collection<VamStandaloneFile>): Collection<VamStandaloneFile> {
+        val ids = vamStandaloneFiles.map { it.relativePath }
+        val existingStandaloneFiles = vamStandaloneFileRepository.findAllById(ids)
+        val existingStandaloneFileIds = existingStandaloneFiles.map { it.relativePath }.toSet()
+        val nonExistingStandaloneFiles = vamStandaloneFiles.filter { !existingStandaloneFileIds.contains(it.relativePath) }
+        val newStandaloneFiles = vamStandaloneFileRepository.saveAll(nonExistingStandaloneFiles)
+        return (existingStandaloneFiles + newStandaloneFiles)
+    }
 }
 
 @Service
+@Transactional
 class VamPackageFileService(private val vamPackageFileRepository: VamPackageFileRepository) {
     fun createOrReplace(vamPackageFile: VamPackageFile): VamPackageFile {
         vamPackageFileRepository.findByIdOrNull(vamPackageFile.relativePath)?.let {

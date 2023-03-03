@@ -16,6 +16,7 @@ class VamDependencyReferenceService(private val vamDependencyRepository: VamDepe
             ?: vamDependencyRepository.save(VamDependencyReference(dependencyReference))
 
     fun findOrCreate(dependencyReferences: Collection<DependencyReference>): Set<VamDependencyReference> {
+        if (dependencyReferences.isEmpty()) return emptySet()
         val existingDependencies = vamDependencyRepository.findAllById(dependencyReferences)
         val existingDependencyReferences = existingDependencies.map { it.dependencyReference }.toSet()
         val nonExistingDependencyReferences = dependencyReferences.filter { !existingDependencyReferences.contains(it) }

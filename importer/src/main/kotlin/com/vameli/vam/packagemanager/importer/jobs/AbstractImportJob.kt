@@ -64,7 +64,9 @@ internal abstract class AbstractImportJob(
                 if (Thread.currentThread().isInterrupted) {
                     throw InterruptedException("Import interrupted")
                 }
+
                 delegatingImportFileProcessor.processFile(fileToImport, context)
+
                 context.markFileAsImported(fileToImport)
             } catch (e: Exception) {
                 when (e) {

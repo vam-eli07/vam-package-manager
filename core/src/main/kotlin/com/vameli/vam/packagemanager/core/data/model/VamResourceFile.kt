@@ -27,7 +27,7 @@ class VamPackageFile(
     var licenseType: String? = null,
 
     @Relationship(RELATIONSHIP_PROVIDES_REFERENCE)
-    var vamDependencyReference: VamDependencyReference,
+    var providedDependencyReference: VamDependencyReference,
 
     @Relationship(RELATIONSHIP_CREATED_BY)
     var author: VamAuthor,

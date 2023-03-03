@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-open class VamAuthorService(private val vamAuthorRepository: VamAuthorRepository) {
+class VamAuthorService(private val vamAuthorRepository: VamAuthorRepository) {
 
     @Transactional
-    open fun findOrCreate(name: String): VamAuthor = vamAuthorRepository.findByIdOrNull(name)
+    fun findOrCreate(name: String): VamAuthor = vamAuthorRepository.findByIdOrNull(name)
         ?: vamAuthorRepository.save(VamAuthor(name))
 }
