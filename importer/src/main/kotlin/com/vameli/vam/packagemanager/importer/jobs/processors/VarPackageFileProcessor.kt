@@ -16,6 +16,7 @@ import com.vameli.vam.packagemanager.importer.ImportJobProgress
 import com.vameli.vam.packagemanager.importer.jobs.FileToImport
 import com.vameli.vam.packagemanager.importer.jobs.ImportFileExtension
 import com.vameli.vam.packagemanager.importer.jobs.ImportJobContext
+import com.vameli.vam.packagemanager.importer.vammodel.HasVamMetaJsonDependency
 import com.vameli.vam.packagemanager.importer.vammodel.VamMetaJson
 import org.springframework.stereotype.Service
 import java.util.LinkedList
@@ -68,6 +69,7 @@ private class StatefulVarPackageFileProcessor(
     private lateinit var metaJson: VamMetaJson
     private lateinit var vamPackageFile: VamPackageFile
     private lateinit var thisPackageDependencyReference: PackageDependencyReference
+    private val otherPackageDependencies: MutableSet<PackageDependencyReference> = mutableSetOf()
     private val zipEntryQueue = LinkedList<ZipEntry>()
     private val pathToZipEntryMap = mutableMapOf<String, ZipEntry>()
     private val itemProcessResults = mutableListOf<TextResourceProcessorResult>()
@@ -115,9 +117,10 @@ private class StatefulVarPackageFileProcessor(
             )
             val resourceContent = loadTextResourceInPackage(zipEntry)
             val results = delegatingTextResourceProcessor.processResource(
-                fileToImport,
-                importJobContext,
-                resourceContent,
+                fileToImport = fileToImport,
+                importJobContext = importJobContext,
+                textResource = resourceContent,
+                deepDependencyScan = false,
             ) { stringPathRelativeToCurrentFile ->
                 loadTextResourceInPackage(stringPathRelativeToCurrentFile)
             }
@@ -129,13 +132,13 @@ private class StatefulVarPackageFileProcessor(
         val relativePath = importJobContext.getPathRelativeToVamInstallation(fileToImport).toString()
 
         return VamPackageFile(
-            relativePath,
-            0,
-            fileToImport.fileSizeBytes,
-            fileToImport.lastModified,
-            licenseType,
-            vamDependencyReferenceService.findOrCreate(dependencyRef),
-            vamAuthorService.findOrCreate(creatorName),
+            relativePath = relativePath,
+            version = 0,
+            fileSizeBytes = fileToImport.fileSizeBytes,
+            lastModified = fileToImport.lastModified,
+            providedDependencyReference = vamDependencyReferenceService.findOrCreate(dependencyRef),
+            licenseType = licenseType,
+            author = vamAuthorService.findOrCreate(creatorName),
         )
     }
 
@@ -147,6 +150,18 @@ private class StatefulVarPackageFileProcessor(
         val dependencyRef = PackageDependencyReference(metaJson.creatorName, metaJson.packageName, matchResult.groupValues[3])
         vamPackageFile = vamPackageFileService.createOrReplace(metaJson.toVamPackageFile(dependencyRef))
         thisPackageDependencyReference = dependencyRef
+        processMetaJsonDependency(metaJson)
+        vamPackageFileService.setPackageDependencies(vamPackageFile, otherPackageDependencies)
+    }
+
+    private fun processMetaJsonDependency(dependency: HasVamMetaJsonDependency) {
+        dependency.dependencies.forEach { key, nestedDependency ->
+            val packageDependencyRef = DependencyReference.fromString(key) as? PackageDependencyReference
+            packageDependencyRef?.let {
+                otherPackageDependencies.add(it)
+            }
+            processMetaJsonDependency(nestedDependency)
+        }
     }
 
     private fun loadTextResourceInPackage(zipEntry: ZipEntry): TextResource = zipFile.getInputStream(zipEntry).reader().use { reader ->

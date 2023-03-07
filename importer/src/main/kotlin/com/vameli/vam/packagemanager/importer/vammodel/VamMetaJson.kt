@@ -3,14 +3,19 @@ package com.vameli.vam.packagemanager.importer.vammodel
 data class VamMetaJson(
     val creatorName: String,
     val packageName: String,
-    val licenseType: String? = null,
+    override val licenseType: String? = null,
     val description: String? = null,
     val instructions: String? = null,
     val promotionalLink: String? = null,
-    val dependencies: Map<String, VamMetaJsonDependency> = emptyMap(),
-)
+    override val dependencies: Map<String, VamMetaJsonDependency> = emptyMap(),
+) : HasVamMetaJsonDependency
 
 data class VamMetaJsonDependency(
-    val licenseType: String? = null,
-    val dependencies: Map<String, VamMetaJsonDependency> = emptyMap(),
-)
+    override val licenseType: String? = null, // TODO process this somehow
+    override val dependencies: Map<String, VamMetaJsonDependency> = emptyMap(),
+) : HasVamMetaJsonDependency
+
+interface HasVamMetaJsonDependency {
+    val licenseType: String?
+    val dependencies: Map<String, VamMetaJsonDependency>
+}

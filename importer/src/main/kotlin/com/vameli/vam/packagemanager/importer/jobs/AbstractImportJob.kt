@@ -34,6 +34,7 @@ internal abstract class AbstractImportJob(
             scanForFiles(vamInstallationPath.resolve(it))
         }
         processAllFiles()
+        resolveLatestDependencies()
         databaseModelService.markDatabaseImportFinished()
         return ImportJobResult()
     }
@@ -86,5 +87,9 @@ internal abstract class AbstractImportJob(
         if (importErrors.isNotEmpty()) {
             logger().warn("Import finished with ${importErrors.size} errors: $importErrors")
         }
+    }
+
+    private fun resolveLatestDependencies() {
+
     }
 }

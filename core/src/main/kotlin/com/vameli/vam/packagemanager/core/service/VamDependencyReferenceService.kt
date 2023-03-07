@@ -1,6 +1,8 @@
 package com.vameli.vam.packagemanager.core.service
 
 import com.vameli.vam.packagemanager.core.data.model.DependencyReference
+import com.vameli.vam.packagemanager.core.data.model.FileInPackageDependencyReference
+import com.vameli.vam.packagemanager.core.data.model.PackageDependencyReference
 import com.vameli.vam.packagemanager.core.data.model.VamDependencyReference
 import com.vameli.vam.packagemanager.core.data.model.VamDependencyRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -13,14 +15,22 @@ class VamDependencyReferenceService(private val vamDependencyRepository: VamDepe
 
     fun findOrCreate(dependencyReference: DependencyReference): VamDependencyReference =
         vamDependencyRepository.findByIdOrNull(dependencyReference)
-            ?: vamDependencyRepository.save(VamDependencyReference(dependencyReference))
+            ?: vamDependencyRepository.save(dependencyReference.toVamDependencyReference())
 
     fun findOrCreate(dependencyReferences: Collection<DependencyReference>): Set<VamDependencyReference> {
         if (dependencyReferences.isEmpty()) return emptySet()
         val existingDependencies = vamDependencyRepository.findAllById(dependencyReferences)
         val existingDependencyReferences = existingDependencies.map { it.dependencyReference }.toSet()
         val nonExistingDependencyReferences = dependencyReferences.filter { !existingDependencyReferences.contains(it) }
-        val newDependencies = nonExistingDependencyReferences.map { VamDependencyReference(it) }
+        val newDependencies = nonExistingDependencyReferences.map { it.toVamDependencyReference() }
         return (existingDependencies + vamDependencyRepository.saveAll(newDependencies)).toSet()
+    }
+
+    fun findReferencesPointingToLatestVersion() = vamDependencyRepository.findAllByDependencyVersion("latest")
+
+    private fun DependencyReference.toVamDependencyReference(): VamDependencyReference = when (this) {
+        is PackageDependencyReference -> VamDependencyReference(dependencyReference = this, dependencyVersion = this.version)
+        is FileInPackageDependencyReference -> VamDependencyReference(dependencyReference = this, dependencyVersion = this.version)
+        else -> VamDependencyReference(dependencyReference = this)
     }
 }

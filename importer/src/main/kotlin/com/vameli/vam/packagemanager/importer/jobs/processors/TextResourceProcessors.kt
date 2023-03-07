@@ -17,6 +17,7 @@ import com.vameli.vam.packagemanager.importer.jobs.ImportJobContext
 import org.springframework.stereotype.Service
 import java.io.FileNotFoundException
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.Path
@@ -43,6 +44,7 @@ internal interface TextResourceProcessor {
         fileToImport: FileToImport,
         importJobContext: ImportJobContext,
         textResource: TextResource,
+        deepDependencyScan: Boolean,
         textResourceProvider: TextResourceProvider,
     ): TextResourceProcessorResult?
 }
@@ -66,9 +68,10 @@ internal class TextResourceFromFileProcessor(
         )
         val textResourceContent = loadTextResource(fileToImport, context)
         val results = delegatingTextResourceProcessor.processResource(
-            fileToImport,
-            context,
-            textResourceContent,
+            fileToImport = fileToImport,
+            importJobContext = context,
+            textResource = textResourceContent,
+            deepDependencyScan = true,
         ) { stringPathRelativeToCurrentFile ->
             loadTextResource(fileToImport, context, stringPathRelativeToCurrentFile)
         }
@@ -103,7 +106,7 @@ internal class TextResourceFromFileProcessor(
             relativePath = relativePathAsString,
             fileSizeBytes = fileSizeBytes,
             lastModified = lastModified,
-            vamDependencyReference = vamDependencyReferenceService.findOrCreate(dependencyReference),
+            providedDependencyReference = vamDependencyReferenceService.findOrCreate(dependencyReference),
         )
     }
 
@@ -111,15 +114,19 @@ internal class TextResourceFromFileProcessor(
         val vamItem = result.vamItem
         val vamStandaloneFile = fileToImport.toVamStandaloneFile(context)
         val standaloneFileDependencies = result.dependencyReferences.filterIsInstance<FilesystemDependencyReference>()
-        val standaloneFiles = standaloneFileDependencies.map { dependencyRef ->
-            val attributes = Files.readAttributes(Path(dependencyRef.relativePath), BasicFileAttributes::class.java)
-            val vamDependencyReference = vamDependencyReferenceService.findOrCreate(dependencyRef)
-            VamStandaloneFile(
-                relativePath = dependencyRef.relativePath,
-                fileSizeBytes = attributes.size(),
-                lastModified = attributes.lastModifiedTime().toInstant(),
-                vamDependencyReference = vamDependencyReference,
-            )
+        val standaloneFiles = standaloneFileDependencies.mapNotNull { dependencyRef ->
+            try {
+                val attributes = Files.readAttributes(Path(dependencyRef.relativePath), BasicFileAttributes::class.java)
+                val vamDependencyReference = vamDependencyReferenceService.findOrCreate(dependencyRef)
+                VamStandaloneFile(
+                    relativePath = dependencyRef.relativePath,
+                    fileSizeBytes = attributes.size(),
+                    lastModified = attributes.lastModifiedTime().toInstant(),
+                    providedDependencyReference = vamDependencyReference,
+                )
+            } catch (_: NoSuchFileException) {
+                null
+            }
         } + vamStandaloneFile
         vamStandaloneFile.item = vamItem
         vamItemService.addItemResourceFiles(vamItem, vamStandaloneFileService.createOrReplace(standaloneFiles))
@@ -140,10 +147,11 @@ internal class DelegatingTextResourceProcessor(
         fileToImport: FileToImport,
         importJobContext: ImportJobContext,
         textResource: TextResource,
+        deepDependencyScan: Boolean,
         textResourceProvider: TextResourceProvider,
     ): List<TextResourceProcessorResult> = processors
         .filter { it.canProcessResource(fileToImport, importJobContext, textResource) }
-        .mapNotNull { it.processResource(fileToImport, importJobContext, textResource, textResourceProvider) }
+        .mapNotNull { it.processResource(fileToImport, importJobContext, textResource, deepDependencyScan, textResourceProvider) }
 }
 
 abstract class AbstractTextResourceProcessor(protected val objectMapper: ObjectMapper) : TextResourceProcessor {

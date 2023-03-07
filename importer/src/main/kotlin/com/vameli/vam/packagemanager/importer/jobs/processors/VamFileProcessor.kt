@@ -32,13 +32,14 @@ internal class VamFileProcessor(
         fileToImport: FileToImport,
         importJobContext: ImportJobContext,
         textResource: TextResource,
+        deepDependencyScan: Boolean,
         textResourceProvider: TextResourceProvider,
     ): TextResourceProcessorResult? {
         val vamFile = objectMapper.readValue<VamVamFile>(textResource.contentAsString)
         val vajResource = getSiblingVajFile(textResource, textResourceProvider)
         val author = vamAuthorService.findOrCreate(vamFile.creatorName)
         val tags = vamFile.tags?.let { vamItemTagService.getOrCreateTags(it).toMutableSet() } ?: mutableSetOf()
-        val dependencies = dependencies(textResource, vajResource)
+        val dependencies = if (deepDependencyScan) dependencies(textResource, vajResource) else emptySet()
         val vamItem = VamItem(
             id = id(importJobContext, vamFile, fileToImport, textResource),
             displayName = vamFile.displayName,

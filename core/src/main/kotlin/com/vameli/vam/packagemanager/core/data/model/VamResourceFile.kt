@@ -12,43 +12,50 @@ import java.time.Instant
 abstract class VamResourceFile(
     @Id
     var relativePath: String,
+
     @Version
-    var version: Long? = null,
+    var version: Long = 0,
     var fileSizeBytes: Long,
     var lastModified: Instant,
+
+    @Relationship(RELATIONSHIP_PROVIDES_REFERENCE)
+    var providedDependencyReference: VamDependencyReference,
 )
 
 @Node
 class VamPackageFile(
     relativePath: String,
-    version: Long? = null,
+    version: Long = 0,
     fileSizeBytes: Long,
     lastModified: Instant,
+    providedDependencyReference: VamDependencyReference,
     var licenseType: String? = null,
 
-    @Relationship(RELATIONSHIP_PROVIDES_REFERENCE)
-    var providedDependencyReference: VamDependencyReference,
+    @Relationship(RELATIONSHIP_DEPENDS_ON)
+    override var packageDependencies: MutableSet<VamDependencyReference> = mutableSetOf(),
 
     @Relationship(RELATIONSHIP_CREATED_BY)
     var author: VamAuthor,
 
     @Relationship(RELATIONSHIP_CONTAINS_ITEM)
     var items: MutableSet<VamItem> = mutableSetOf(),
-) : VamResourceFile(relativePath, version, fileSizeBytes, lastModified)
+) : VamResourceFile(relativePath, version, fileSizeBytes, lastModified, providedDependencyReference), VamPackageFileDependenciesProjection
+
+interface VamPackageFileDependenciesProjection {
+    var packageDependencies: MutableSet<VamDependencyReference>
+}
 
 @Node
 class VamStandaloneFile(
     relativePath: String,
-    version: Long? = null,
+    version: Long = 0,
     fileSizeBytes: Long,
     lastModified: Instant,
-
-    @Relationship(RELATIONSHIP_PROVIDES_REFERENCE)
-    var vamDependencyReference: VamDependencyReference,
+    providedDependencyReference: VamDependencyReference,
 
     @Relationship(RELATIONSHIP_CONTAINS_ITEM)
     var item: VamItem? = null,
-) : VamResourceFile(relativePath, version, fileSizeBytes, lastModified)
+) : VamResourceFile(relativePath, version, fileSizeBytes, lastModified, providedDependencyReference)
 
 @Repository
 interface VamResourceFileRepository : Neo4jRepository<VamResourceFile, String>

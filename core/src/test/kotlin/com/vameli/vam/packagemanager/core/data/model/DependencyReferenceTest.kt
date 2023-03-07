@@ -58,6 +58,8 @@ class DependencyReferenceTest {
         value = [
             "YameteOuji.OL01_Set.1, YameteOuji, OL01_Set, 1, true",
             "YameteOuji.OL01_Set.latest, YameteOuji, OL01_Set, latest, false",
+            "xstatic.Xstatic_particle_pack_#8_Fog.latest, xstatic, Xstatic_particle_pack_#8_Fog, latest, false",
+            "xstatic.Xstatic_particle_pack_&()_Fog.latest, xstatic, Xstatic_particle_pack_&()_Fog, latest, false",
         ],
     )
     fun `matches valid package reference`(

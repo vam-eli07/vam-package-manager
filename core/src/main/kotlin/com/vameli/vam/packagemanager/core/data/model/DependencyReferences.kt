@@ -11,7 +11,7 @@ import org.springframework.data.neo4j.repository.Neo4jRepository
 import org.springframework.stereotype.Repository
 
 private val PACKAGE_REFERENCE_REGEX =
-    Regex("^([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9_\\-\\[\\]]+)\\.([a-zA-Z0-9]+)(:([a-zA-Z0-9 /_.()\\-\\[\\]]+))?\$")
+    Regex("^([a-zA-Z0-9_\\-\\[\\]]+)\\.([^.]+)\\.([a-zA-Z0-9]+)(:([a-zA-Z0-9 /_.()\\-\\[\\]]+))?\$")
 private val STANDALONE_FILE_REFERENCE_REGEX =
     Regex("^([^/\\\\:]+[/\\\\])+[^/\\\\.]+\\.[^/\\\\.]+$")
 
@@ -113,6 +113,7 @@ data class VamDependencyReference(
     var dependencyReference: DependencyReference,
     @Version
     var version: Long = 0,
+    var dependencyVersion: String? = null,
 ) {
     override fun toString(): String {
         return "VamDependencyReference(dependencyReference=$dependencyReference, version=$version)"
@@ -120,4 +121,6 @@ data class VamDependencyReference(
 }
 
 @Repository
-interface VamDependencyRepository : Neo4jRepository<VamDependencyReference, DependencyReference>
+interface VamDependencyRepository : Neo4jRepository<VamDependencyReference, DependencyReference> {
+    fun findAllByDependencyVersion(dependencyVersion: String): Set<VamDependencyReference>
+}
